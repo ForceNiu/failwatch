@@ -1,0 +1,16 @@
+{
+  "name": "@failwatch/demo-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@failwatch/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22"
+  }
+}
