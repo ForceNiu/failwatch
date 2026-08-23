@@ -25,6 +25,11 @@ yarn-debug.log*
 # ===== 测试覆盖率 =====
 coverage/
 
+# ===== 工具缓存 / 本地打包 =====
+.eslintcache
+.cache/
+*.tgz
+
 # ===== TS 构建信息 =====
 *.tsbuildinfo
 
@@ -33,3 +38,4 @@ coverage/
 .idea/
 .vscode/
 *.local
+Thumbs.db
