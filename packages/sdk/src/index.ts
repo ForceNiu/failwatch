@@ -1,2 +1,3 @@
-// FailWatch 上报 SDK 入口（M0 占位，M1 开始手写失败事件类型）。
-export {}
+// FailWatch 上报 SDK 入口
+// 导出共享类型：collector / web / demo-app 都从这里 import
+export type { FailureEvent } from './types.js'

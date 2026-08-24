@@ -1,7 +1,15 @@
-// FailWatch 采集后端入口（M0 占位骨架，M2 起接 SQLite + 路由）。
+// FailWatch 采集后端入口
 import express from 'express'
+import ingestRouter from './routes/ingest.js'
 
 const app = express()
+
+// 中间件：把请求体（JSON）解析成 JS 对象，否则 req.body 是 undefined
+app.use(express.json())
+
+// 挂载 ingest 路由（POST /ingest 就是在这里注册进 app 的）
+app.use(ingestRouter)
+
 app.get('/health', (_req, res) => {
   res.json({ ok: true })
 })
