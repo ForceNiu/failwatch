@@ -30,6 +30,9 @@ coverage/
 .cache/
 *.tgz
 
+# ===== pnpm 临时残留（lockfile 原子写产生的空文件）=====
+_tmp_*
+
 # ===== TS 构建信息 =====
 *.tsbuildinfo
 
