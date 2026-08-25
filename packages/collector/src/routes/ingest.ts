@@ -10,7 +10,8 @@ import type { FailureEvent } from '@failwatch/sdk'
 import type { InsertRow } from '../store.js'
 
 // ===== Zod schema：SDK 的 FailureEvent 的"运行时检查清单" =====
-function toRow(event: FailureEvent): InsertRow {
+// 导出：给 toRow 的单测用
+export function toRow(event: FailureEvent): InsertRow {
   const base = {
     id: event.id,
     kind: event.kind,
