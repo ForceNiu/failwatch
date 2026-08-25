@@ -47,7 +47,8 @@ failwatch/
 | SDK | 原生 TS，无框架依赖 |
 | collector | Node.js + Express + Zod（运行时校验）+ postgres.js + Neon Postgres |
 | web | React + Vite + antd |
-| AI 分析 | LangGraph.js（分析流） |
+| 测试 | Vitest（单测）+ GitHub Actions CI（typecheck / test / build） |
+| AI 分析 | LangGraph.js（分析流，M5） |
 
 ## 本地开发
 
@@ -55,29 +56,35 @@ failwatch/
 
 ```bash
 pnpm install      # 安装全部依赖
-pnpm dev          # 启动 web 看板（Vite dev server）
+pnpm dev          # 启动 web 看板（Vite dev server，5173）
 pnpm typecheck    # 全包 TypeScript 类型检查
+pnpm test         # 运行单测（vitest）
 ```
 
 分包单独操作：
 
 ```bash
-pnpm --filter @failwatch/sdk typecheck
-pnpm --filter @failwatch/collector dev
+pnpm --filter @failwatch/collector dev   # 启动后端（4000 端口，需根目录 .env 的 DATABASE_URL）
 ```
 
-## 项目状态
+SDK 验证（demo 页）：`pnpm dev` 后打开 http://localhost:5173/demo.html，点按钮故意抛错 → 看板列表/聚类标签下出现新记录（无需刷新）。
+
+## 项目状态（2026-08-25）
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
-| M0 | monorepo 脚手架（sdk / collector / web / demo-app 四包） | ✅ 完成 |
-| M1 | SDK 共享类型 `FailureEvent` 判别联合 + 收窄自证 | ✅ 完成（tsc 零报错） |
-| M2 | collector 接收上报 + Zod 校验 + Neon 建表存储 | ⏳ 规划中 |
-| M3 | web 看板：失败事件列表 / 筛选 / 详情 | ⏳ 规划中 |
-| M4 | AI 报告：LangGraph 6 节点分析流（聚合→分级→归因→建议→汇总→校验） | ⏳ 规划中 |
-| M5 | SDK 完整采集能力（捕获 JS 错 / Promise / 接口 / 资源 + breadcrumbs） | ⏳ 规划中 |
-| M6 | demo-app 联调 + SSE 实时推送 | ⏳ 规划中 |
-| M7 | 部署：Neon 建库 + Vercel | ⏳ 规划中 |
+| M0 | monorepo 脚手架（sdk / collector / web 三包） | ✅ 完成 |
+| M1 | SDK：`FailureEvent` 判别联合 + 全局捕获（onerror / unhandledrejection）+ 上报 | ✅ 完成 |
+| M2 | collector：Neon 建表存储 + Zod 校验 + /ingest + 查询路由 | ✅ 完成 |
+| M3 | Dashboard：失败列表 / 筛选栏 / 聚类视图 | ✅ 完成 |
+| — | 单测基线（vitest：groupFailures + filterFailures，5 断言） | ✅ 完成 |
+| — | CI（GitHub Actions：typecheck / test / build 三道门禁） | ✅ 完成 |
+| M4 | SSE 实时推送（新失败自动上板） | ⏳ 下一步 |
+| M5 | AI 每日整合报告（LangGraph 分析流） | ⏳ 规划中 |
+| M6 | demo-app 正式联调（示例应用接 SDK） | ⏳ 规划中 |
+| M7 | 部署：Vercel 上线（面试可演示） | ⏳ 规划中 |
+
+**已打通全链路**：浏览器抛错 → SDK 捕获打包 → POST /ingest → collector Zod 校验 → Neon 入库 → 看板列表/聚类展示。当前进度约 58%。
 
 ## 为什么用 monorepo
 
