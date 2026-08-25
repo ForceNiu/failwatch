@@ -5,10 +5,18 @@ import type { RawFailure } from './App'
 // 造"原始行"：默认 js_error + 可覆盖任意字段
 function makeRaw(over: Partial<RawFailure>): RawFailure {
   return {
-    id: 'x', kind: 'js_error', severity: 'high', route: '/save',
-    timestamp: '1756000000000', created_at: '2026-08-25T00:00:00.000Z',
-    message: 'boom', url: null, method: null, status: null,
-    resource_url: null, resource_type: null,
+    id: 'x',
+    kind: 'js_error',
+    severity: 'high',
+    route: '/save',
+    timestamp: '1756000000000',
+    created_at: '2026-08-25T00:00:00.000Z',
+    message: 'boom',
+    url: null,
+    method: null,
+    status: null,
+    resource_url: null,
+    resource_type: null,
     ...over,
   }
 }
