@@ -27,7 +27,8 @@ interface RawFailure {
 // 转换：原始行 → 前端显示模型（toRow 的反向操作）
 // ① 字段改名：created_at → createdAt（下划线转驼峰）
 // ② 拼错误摘要：api_error 的 message 在数据库里是 null（消息在 url/status 里）
-function toView(row: RawFailure): FailureView {
+// 导出：给单测用
+export function toView(row: RawFailure): FailureView {
   let message = row.message ?? ''
   if (row.kind === 'api_error' && row.url) {
     message = `${row.method ?? '?'} ${row.url} (${row.status ?? '?'})`
@@ -46,8 +47,8 @@ function toView(row: RawFailure): FailureView {
   }
 }
 
-// 纯函数：按筛选条件过滤
-function filterFailures(items: FailureView[], f: FailureFilters): FailureView[] {
+// 纯函数：按筛选条件过滤（导出：给单测用）
+export function filterFailures(items: FailureView[], f: FailureFilters): FailureView[] {
   return items.filter(
     (item) =>
       (!f.kind || item.kind === f.kind) &&
