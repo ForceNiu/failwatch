@@ -5,6 +5,15 @@ import queryRouter from './routes/query.js'
 
 const app = express()
 
+// CORS 中间件：允许任何页面跨域上报（SDK 从别的站点 POST /ingest 必须的，Sentry 也这样）
+app.use((_req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*')
+  res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.set('Access-Control-Allow-Headers', 'Content-Type')
+  if (_req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
+
 // 中间件：把请求体（JSON）解析成 JS 对象，否则 req.body 是 undefined
 app.use(express.json())
 
