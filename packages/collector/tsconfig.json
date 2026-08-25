@@ -8,7 +8,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2022"],
+    // 临时加 DOM：workspace 直引 sdk 浏览器源码（capture.ts 用 window/location）
+    // 正式做法：sdk 构建产物（dist + d.ts）后移除（M7 前 TODO）
+    "lib": ["ES2022", "DOM"],
     "types": ["node"]
   },
   "include": ["src"]
