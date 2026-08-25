@@ -9,7 +9,8 @@ import type { FailureView } from './types'
 
 // 后端返回的原始行（FailureRow 形状：下划线字段 + 全列）
 // 只声明我们要用到的字段（TS 结构类型：多余字段不影响）
-interface RawFailure {
+// 导出：给 toView 的单测用
+export interface RawFailure {
   id: string
   kind: string
   severity: string
