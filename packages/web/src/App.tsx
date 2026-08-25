@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ConfigProvider, Typography } from 'antd'
+import { ConfigProvider, Tabs, Typography } from 'antd'
 import { FailureList } from './components/FailureList'
 import { FilterBar } from './components/FilterBar'
+import { ClusterView } from './components/ClusterView'
+import { groupFailures } from './cluster'
 import type { FailureFilters } from './components/FilterBar'
 import type { FailureView } from './types'
 
@@ -75,12 +77,29 @@ export default function App() {
   // ④ useMemo 缓存过滤结果：items 或 filters 没变就不重算
   const filtered = useMemo(() => filterFailures(items, filters), [items, filters])
 
+  // ⑤ 聚类：把过滤后的数据按指纹分组（也是 useMemo 缓存）
+  const clusters = useMemo(() => groupFailures(filtered), [filtered])
+
   return (
     <ConfigProvider>
       <div style={{ padding: 24 }}>
         <Typography.Title level={2}>FailWatch 失败监控平台</Typography.Title>
         <FilterBar value={filters} onChange={setFilters} />
-        <FailureList items={filtered} loading={loading} />
+        {/* ⑥ Tabs：列表视图 / 聚类视图 切换 */}
+        <Tabs
+          items={[
+            {
+              key: 'list',
+              label: '列表',
+              children: <FailureList items={filtered} loading={loading} />,
+            },
+            {
+              key: 'cluster',
+              label: '聚类',
+              children: <ClusterView clusters={clusters} />,
+            },
+          ]}
+        />
       </div>
     </ConfigProvider>
   )
