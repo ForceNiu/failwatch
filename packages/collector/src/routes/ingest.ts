@@ -5,12 +5,14 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { insert } from '../store.js'
+import { failureBus } from '../emitter.js'
 
 import type { FailureEvent } from '@failwatch/sdk'
 import type { InsertRow } from '../store.js'
 
 // ===== Zod schema：SDK 的 FailureEvent 的"运行时检查清单" =====
-function toRow(event: FailureEvent): InsertRow {
+// 导出：给 toRow 的单测用
+export function toRow(event: FailureEvent): InsertRow {
   const base = {
     id: event.id,
     kind: event.kind,
@@ -147,6 +149,8 @@ router.post('/ingest', async (req, res) => {
   // 安检通过：FailureEvent → 摊平成一行 → 入库
   const row = toRow(result.data)
   const inserted = await insert(row)
+  // M4：入库成功 → 广播"新失败来了"（SSE 频道推给所有收听者）
+  failureBus.emit('failure', row)
   res.status(201).json({ ok: true, id: inserted.id })
 })
 

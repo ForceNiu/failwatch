@@ -9,7 +9,8 @@ import type { FailureView } from './types'
 
 // 后端返回的原始行（FailureRow 形状：下划线字段 + 全列）
 // 只声明我们要用到的字段（TS 结构类型：多余字段不影响）
-interface RawFailure {
+// 导出：给 toView 的单测用
+export interface RawFailure {
   id: string
   kind: string
   severity: string
@@ -70,6 +71,16 @@ export default function App() {
       .then((data: RawFailure[]) => setItems(data.map(toView)))
       .catch((err) => console.error('拉取失败记录失败:', err))
       .finally(() => setLoading(false))
+  }, [])
+
+  // ②.5 M4 SSE：连上广播频道，新失败自动追加（不用刷新）
+  useEffect(() => {
+    const es = new EventSource('/api/events') // 连上 collector 的 SSE 频道
+    es.onmessage = (e) => {
+      const row: RawFailure = JSON.parse(e.data) // 收到的就是一条数据库行
+      setItems((prev) => [toView(row), ...prev]) // 加到列表最前面
+    }
+    return () => es.close() // 组件卸载时关闭连接（防泄漏）
   }, [])
 
   // ③ 筛选状态（老板的纸条）

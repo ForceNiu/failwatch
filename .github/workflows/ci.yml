@@ -1,0 +1,38 @@
+# FailWatch CI：每次 push / PR 自动跑三道门禁
+# typecheck → 单测 → build（对应 Interview Forge 的 CI 经验）
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # 门禁 1：类型检查（sdk / web / collector 全包）
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # 门禁 2：单元测试（vitest）
+      - name: Unit tests
+        run: pnpm --filter @failwatch/web test
+
+      # 门禁 3：构建（web 能打包 = 生产可部署）
+      - name: Build
+        run: pnpm build
