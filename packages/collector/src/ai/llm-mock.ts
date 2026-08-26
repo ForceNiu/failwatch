@@ -1,18 +1,11 @@
 // Mock LLM：开发默认（不烧钱）
-// 策略：优先回放"样本库"里的真实响应（真实数据反哺 mock）→ 没有样本用内置假数据
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
+// 策略：优先按 fingerprint 回放"样本库"里的真实响应（真实数据反哺 mock）→ 没有样本用内置假数据
 import type { ReportIssue } from './types.js'
 import type { LLM } from './llm.js'
-
-const SAMPLES_FILE = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../data/llm-samples.json',
-)
+import { loadSamples } from './samples.js'
 
 // 内置假数据（没有真实样本时用——关键词是"假"）
-function fakeAnalysis(issue: ReportIssue) {
+function fakeAnalysis(issue: ReportIssue): ReportIssue {
   return {
     ...issue,
     rootCause: `【mock】${issue.message} 的常见原因是依赖/配置/资源问题，需结合 stack 分析`,
@@ -22,17 +15,11 @@ function fakeAnalysis(issue: ReportIssue) {
 
 export class MockLLM implements LLM {
   async analyze(issues: ReportIssue[]): Promise<ReportIssue[]> {
-    // ① 尝试读样本库（真实 DeepSeek 调用录下来的响应）
-    let samples: ReportIssue[] = []
-    try {
-      samples = JSON.parse(readFileSync(SAMPLES_FILE, 'utf-8'))
-    } catch {
-      samples = [] // 没有样本库 → 用内置假数据
-    }
+    const samples = loadSamples()
 
-    // ② 有真实样本 → 回放；没有 → 假数据
-    return issues.map((issue, i) => {
-      const real = samples[i]
+    // 按 fingerprint 匹配回放（不按索引：样本顺序 / issue 顺序变化都不会串台）
+    return issues.map((issue) => {
+      const real = samples.find((s) => s.fingerprint === issue.fingerprint)
       if (real?.rootCause && real?.suggestion) {
         return { ...issue, rootCause: real.rootCause, suggestion: real.suggestion }
       }
