@@ -3,6 +3,7 @@ import express from 'express'
 import ingestRouter from './routes/ingest.js'
 import queryRouter from './routes/query.js'
 import eventsRouter from './routes/events.js'
+import reportRouter from './routes/report.js'
 
 const app = express()
 
@@ -18,10 +19,11 @@ app.use((_req, res, next) => {
 // 中间件：把请求体（JSON）解析成 JS 对象，否则 req.body 是 undefined
 app.use(express.json())
 
-// 挂载路由：POST /ingest（写入）+ GET /failures（查询）+ GET /events（SSE 频道）
+// 挂载路由：POST /ingest（写入）+ GET /failures（查询）+ GET /events（SSE）+ GET /report（AI 报告）
 app.use(ingestRouter)
 app.use(queryRouter)
 app.use(eventsRouter)
+app.use(reportRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true })

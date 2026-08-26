@@ -42,3 +42,6 @@ _tmp_*
 .vscode/
 *.local
 Thumbs.db
+
+# ===== M5 LLM 样本库（运行时录制，不进仓库）=====
+packages/collector/data/

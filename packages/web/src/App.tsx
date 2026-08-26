@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ConfigProvider, Tabs, Typography } from 'antd'
+import { Card, ConfigProvider, List, Tabs, Tag, Typography } from 'antd'
 import { FailureList } from './components/FailureList'
 import { FilterBar } from './components/FilterBar'
 import { ClusterView } from './components/ClusterView'
@@ -110,9 +110,65 @@ export default function App() {
               label: '聚类',
               children: <ClusterView clusters={clusters} />,
             },
+            {
+              key: 'report',
+              label: 'AI 报告',
+              children: <ReportView />,
+            },
           ]}
         />
       </div>
     </ConfigProvider>
+  )
+}
+
+// M5：AI 报告视图（拉 /api/report，展示"最该修的问题"）
+function ReportView() {
+  const [report, setReport] = useState<{ generatedAt: number; windowHours: number; totalEvents: number; topIssues: { message: string; severity: string; count: number; score: number; rootCause?: string; suggestion?: string }[] } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/report?hours=24')
+      .then((res) => res.json())
+      .then(setReport)
+      .catch((err) => console.error('拉取报告失败:', err))
+  }, [])
+
+  if (!report) return <Typography.Text type="secondary">报告生成中…</Typography.Text>
+
+  return (
+    <div>
+      <Typography.Paragraph type="secondary">
+        过去 {report.windowHours} 小时 · 共 {report.totalEvents} 次错误 · 按严重度排序
+      </Typography.Paragraph>
+      <List
+        dataSource={report.topIssues}
+        renderItem={(issue) => (
+          <List.Item>
+            <Card size="small" style={{ width: '100%' }}>
+              <Typography.Text strong>{issue.message}</Typography.Text>
+              <div style={{ marginTop: 4 }}>
+                <Tag color={issue.severity === 'critical' ? 'red' : issue.severity === 'high' ? 'orange' : 'default'}>
+                  {issue.severity}
+                </Tag>
+                <Tag>{issue.count} 次</Tag>
+                <Tag>评分 {issue.score.toFixed(1)}</Tag>
+              </div>
+              {issue.rootCause && (
+                <Typography.Paragraph style={{ marginTop: 8, marginBottom: 4 }}>
+                  <Typography.Text strong>原因：</Typography.Text>
+                  {issue.rootCause}
+                </Typography.Paragraph>
+              )}
+              {issue.suggestion && (
+                <Typography.Paragraph style={{ marginBottom: 0 }}>
+                  <Typography.Text strong>建议：</Typography.Text>
+                  {issue.suggestion}
+                </Typography.Paragraph>
+              )}
+            </Card>
+          </List.Item>
+        )}
+      />
+    </div>
   )
 }
