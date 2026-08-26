@@ -5,6 +5,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { insert } from '../store.js'
+import { failureBus } from '../emitter.js'
 
 import type { FailureEvent } from '@failwatch/sdk'
 import type { InsertRow } from '../store.js'
@@ -148,6 +149,8 @@ router.post('/ingest', async (req, res) => {
   // 安检通过：FailureEvent → 摊平成一行 → 入库
   const row = toRow(result.data)
   const inserted = await insert(row)
+  // M4：入库成功 → 广播"新失败来了"（SSE 频道推给所有收听者）
+  failureBus.emit('failure', row)
   res.status(201).json({ ok: true, id: inserted.id })
 })
 

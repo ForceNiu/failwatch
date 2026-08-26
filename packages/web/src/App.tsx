@@ -73,6 +73,16 @@ export default function App() {
       .finally(() => setLoading(false))
   }, [])
 
+  // ②.5 M4 SSE：连上广播频道，新失败自动追加（不用刷新）
+  useEffect(() => {
+    const es = new EventSource('/api/events') // 连上 collector 的 SSE 频道
+    es.onmessage = (e) => {
+      const row: RawFailure = JSON.parse(e.data) // 收到的就是一条数据库行
+      setItems((prev) => [toView(row), ...prev]) // 加到列表最前面
+    }
+    return () => es.close() // 组件卸载时关闭连接（防泄漏）
+  }, [])
+
   // ③ 筛选状态（老板的纸条）
   const [filters, setFilters] = useState<FailureFilters>({})
 
