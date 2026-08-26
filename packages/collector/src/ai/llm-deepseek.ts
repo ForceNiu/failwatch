@@ -31,7 +31,7 @@ export class DeepSeekLLM implements LLM {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-v4-flash', // 用户指定模型（v4-flash，便宜快）
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
       }),
