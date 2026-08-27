@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Card, ConfigProvider, List, Select, Tabs, Tag, Tooltip, Typography } from 'antd'
+import { useSSE, type SSEStatus } from './useSSE'
 import { FailureList } from './components/FailureList'
 import { FilterBar } from './components/FilterBar'
 import { ClusterView } from './components/ClusterView'
@@ -73,15 +74,11 @@ export default function App() {
       .finally(() => setLoading(false))
   }, [])
 
-  // ②.5 M4 SSE：连上广播频道，新失败自动追加（不用刷新）
-  useEffect(() => {
-    const es = new EventSource('/api/events') // 连上 collector 的 SSE 频道
-    es.onmessage = (e) => {
-      const row: RawFailure = JSON.parse(e.data) // 收到的就是一条数据库行
-      setItems((prev) => [toView(row), ...prev]) // 加到列表最前面
-    }
-    return () => es.close() // 组件卸载时关闭连接（防泄漏）
-  }, [])
+  // ②.5 M4 SSE（加固版）：连广播频道，新失败自动追加；客户端扛住代理静默掐断
+  const sseStatus = useSSE((data) => {
+    const row: RawFailure = JSON.parse(data) // 收到的就是一条数据库行
+    setItems((prev) => [toView(row), ...prev]) // 加到列表最前面
+  })
 
   // ③ 筛选状态（老板的纸条）
   const [filters, setFilters] = useState<FailureFilters>({})
@@ -95,7 +92,10 @@ export default function App() {
   return (
     <ConfigProvider>
       <div style={{ padding: 24 }}>
-        <Typography.Title level={2}>FailWatch 失败监控平台</Typography.Title>
+        <Typography.Title level={2} style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+          FailWatch 失败监控平台
+          <SSEBadge status={sseStatus} />
+        </Typography.Title>
         <FilterBar value={filters} onChange={setFilters} />
         {/* ⑥ Tabs：列表视图 / 聚类视图 切换 */}
         <Tabs
@@ -119,6 +119,29 @@ export default function App() {
         />
       </div>
     </ConfigProvider>
+  )
+}
+
+// SSE 连接状态灯：实时(绿) / 重连中(黄) / 连接中(灰)
+function SSEBadge({ status }: { status: SSEStatus }) {
+  const color = status === 'live' ? '#52c41a' : status === 'reconnecting' ? '#faad14' : '#999'
+  const label = status === 'live' ? '实时' : status === 'reconnecting' ? '重连中…' : '连接中…'
+  return (
+    <Tooltip title="SSE 实时推送连接状态（代理静默掐断会自动恢复）">
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 400,
+          color,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block' }} />
+        {label}
+      </span>
+    </Tooltip>
   )
 }
 

@@ -67,9 +67,14 @@ pnpm test         # 运行单测（vitest）
 pnpm --filter @failwatch/collector dev   # 启动后端（4000 端口，需根目录 .env 的 DATABASE_URL）
 ```
 
-SDK 验证（demo 页）：`pnpm dev` 后打开 http://localhost:5173/demo.html，点按钮故意抛错 → 看板列表/聚类标签下出现新记录（无需刷新）。
+SDK 验证（demo-app 示例商城）：需同时启动三个服务——
+- 后端 collector：`pnpm --filter @failwatch/collector dev`（4000，需根目录 `.env` 的 `DATABASE_URL`）
+- 看板 web：`pnpm dev`（5173）
+- 示例应用：`pnpm --filter @failwatch/demo-app dev`（5175）
 
-## 项目状态（2026-08-25）
+打开 http://localhost:5175 点「加购 / 结算 / 详情」故意触发错误 → 看板 http://localhost:5173 通过 SSE 实时（无需刷新）出现新记录，标题旁状态灯显示「实时」。
+
+## 项目状态（2026-08-27）
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
@@ -79,12 +84,12 @@ SDK 验证（demo 页）：`pnpm dev` 后打开 http://localhost:5173/demo.html�
 | M3 | Dashboard：失败列表 / 筛选栏 / 聚类视图 | ✅ 完成 |
 | — | 单测基线（vitest：groupFailures + filterFailures，5 断言） | ✅ 完成 |
 | — | CI（GitHub Actions：typecheck / test / build 三道门禁） | ✅ 完成 |
-| M4 | SSE 实时推送（新失败自动上板） | ⏳ 下一步 |
-| M5 | AI 每日整合报告（LangGraph 分析流） | ⏳ 规划中 |
-| M6 | demo-app 正式联调（示例应用接 SDK） | ⏳ 规划中 |
-| M7 | 部署：Vercel 上线（面试可演示） | ⏳ 规划中 |
+| M4 | SSE 实时推送（新失败自动上板，客户端主动重连 + 心跳看门狗 + 状态灯） | ✅ 完成 |
+| M5 | AI 每日整合报告（LangGraph 分析流 + Sentry 评分模型） | ✅ 完成 |
+| M6 | demo-app 正式联调（示例商城接 SDK，固定错误绑定 + 双主题） | ✅ 完成 |
+| M7 | 部署：Vercel 上线（面试可演示） | ⏳ 规划中（可选） |
 
-**已打通全链路**：浏览器抛错 → SDK 捕获打包 → POST /ingest → collector Zod 校验 → Neon 入库 → 看板列表/聚类展示。当前进度约 58%。
+**已打通全链路**：浏览器抛错 → SDK 捕获打包 → POST /ingest → collector Zod 校验 → Neon 入库 → SSE 实时推送 → 看板列表/聚类展示（无需刷新）。当前进度约 90%（仅 M7 部署可选）。
 
 ## 为什么用 monorepo
 
