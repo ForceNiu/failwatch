@@ -1,5 +1,6 @@
 // FailWatch 采集后端入口
 import express from 'express'
+import http from 'node:http'
 import ingestRouter from './routes/ingest.js'
 import queryRouter from './routes/query.js'
 import eventsRouter from './routes/events.js'
@@ -32,6 +33,11 @@ app.get('/health', (_req, res) => {
 })
 
 const port = 4000
-app.listen(port, () => {
+const server = http.createServer(app)
+// SSE 长连接（/events）的响应一直不结束。Node 默认 requestTimeout=300000(5分钟) 只管"请求接收阶段"，
+// 对 SSE 这种无请求体的长响应不生效；仍显式设为 0 作为最佳实践（禁用任何请求超时），
+// 避免未来有请求体时触发。真正的 SSE 保活靠心跳 + 代理/进程层治理。
+server.requestTimeout = 0
+server.listen(port, () => {
   console.log(`FailWatch collector listening on :${port}`)
 })
