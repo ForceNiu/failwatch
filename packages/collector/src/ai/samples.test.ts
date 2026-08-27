@@ -1,6 +1,6 @@
 // 样本库读写测试（M5 调试加固：目录自动建 / 去重 / 上限 / 容错）
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { appendSamples, loadSamples, SAMPLES_MAX } from './samples'
@@ -73,7 +73,6 @@ describe('loadSamples 容错', () => {
     // 先正常写一个，再手动写坏内容
     appendSamples([makeIssue('fp1')])
     // 手动覆盖成非法 JSON（直接写文件，绕过 appendSamples）
-    const { writeFileSync } = require('node:fs')
     writeFileSync(file, '{oops not json')
     expect(loadSamples()).toEqual([])
   })

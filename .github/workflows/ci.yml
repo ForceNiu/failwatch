@@ -29,10 +29,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # 门禁 2：单元测试（vitest）
-      - name: Unit tests
-        run: pnpm --filter @failwatch/web test
+      # 门禁 2：风格与暗箱拦截（ESLint，强制 no-explicit-any；CODE_REVIEW.md 2.3）
+      - name: Lint
+        run: pnpm lint
 
-      # 门禁 3：构建（web 能打包 = 生产可部署）
+      # 门禁 3：单元测试（vitest，web + collector 全包都跑）
+      - name: Unit tests
+        run: pnpm -r --if-present test
+
+      # 门禁 4：构建（web 能打包 = 生产可部署）
       - name: Build
         run: pnpm build

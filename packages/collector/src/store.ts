@@ -4,14 +4,24 @@
  */
 import postgres from 'postgres'
 
-// 连接串从环境变量读（.env，已被 gitignore）。没配就立刻报错，而不是默默连本地。
+// 连接串从环境变量读（.env，已被 gitignore）
 const databaseUrl = process.env.DATABASE_URL
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL 未设置：请确认根目录 .env 存在，且通过 --env-file=../../.env 启动')
-}
 
-// 连接池：postgres.js 连 Neon，sslmode=require
-export const sql = postgres(databaseUrl, { ssl: 'require' })
+// 懒加载连接池：模块加载时不再连库。
+// 原因：import store 的代码（路由 / collector 单测 / 未来的 SSR、CLI）不应在加载期就被强制要求
+//       DATABASE_URL 环境，否则无库的 CI、单测环境一加载 store 就崩。
+//       postgres.js 本身惰性连接，这里只是把『DATABASE_URL 未设置』的 fail-fast 检查从加载期延后到首次使用时。
+let _sql: ReturnType<typeof postgres> | null = null
+function getSql(): ReturnType<typeof postgres> {
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL 未设置：请确认根目录 .env 存在，且通过 --env-file=../../.env 启动')
+  }
+  if (!_sql) {
+    // 连接池：postgres.js 连 Neon，sslmode=require
+    _sql = postgres(databaseUrl, { ssl: 'require' })
+  }
+  return _sql
+}
 
 // ===== 数据库里"一行失败记录"的样子（TODO ① 你写）=====
 // 对照 failures 表列清单，把每一列翻译成字段。
@@ -46,7 +56,7 @@ export interface FailureRow {
 
 // ===== 建表（表结构固定，SQL 我来写，你负责看懂每一行）=====
 export async function createTable(): Promise<void> {
-  await sql`
+  await getSql()`
     CREATE TABLE IF NOT EXISTS failures (
       id            TEXT PRIMARY KEY,
       kind          TEXT NOT NULL,
@@ -87,7 +97,7 @@ export type InsertRow = Omit<FailureRow, 'created_at'>
 export async function insert(row: InsertRow): Promise<FailureRow> {
   // 模板字符串里的 SQL：INSERT INTO failures (列名...) VALUES (值...)
   // ${row.xxx} 是参数化占位：数据安全传入，不会拼成命令（防 SQL 注入）
-  const [inserted] = await sql`
+  const [inserted] = await getSql()`
     INSERT INTO failures (
       id, kind, timestamp, route, user_agent, severity,
       breadcrumbs, release, user_id,
@@ -112,7 +122,7 @@ export async function insert(row: InsertRow): Promise<FailureRow> {
 
 // ===== 查全部（按时间倒序，新的在前）=====
 export async function list(limit = 100): Promise<FailureRow[]> {
-  const rows = await sql`
+  const rows = await getSql()`
     SELECT * FROM failures
     ORDER BY timestamp DESC
     LIMIT ${limit}
@@ -129,7 +139,7 @@ export interface FailureFilter {
 }
 
 export async function filter(f: FailureFilter): Promise<FailureRow[]> {
-  const rows = await sql`
+  const rows = await getSql()`
     SELECT * FROM failures
     WHERE
       (${f.kind ?? null}::text IS NULL OR kind = ${f.kind ?? null})
