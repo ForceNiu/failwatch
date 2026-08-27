@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ConfigProvider, Tabs, Typography } from 'antd'
+import { Card, ConfigProvider, List, Select, Tabs, Tag, Tooltip, Typography } from 'antd'
 import { FailureList } from './components/FailureList'
 import { FilterBar } from './components/FilterBar'
 import { ClusterView } from './components/ClusterView'
@@ -110,9 +110,89 @@ export default function App() {
               label: '聚类',
               children: <ClusterView clusters={clusters} />,
             },
+            {
+              key: 'report',
+              label: 'AI 报告',
+              children: <ReportView filters={filters} />,
+            },
           ]}
         />
       </div>
     </ConfigProvider>
+  )
+}
+
+// M5：AI 报告视图（拉 /api/report，展示"最该修的问题"）
+// filters：顶部筛选（kind/severity/route）——现在也作用于报告（M5 调试补上）
+function ReportView({ filters }: { filters: FailureFilters }) {
+  const [hours, setHours] = useState(24) // 时间窗（小时）
+  const [report, setReport] = useState<{ generatedAt: number; windowHours: number; totalEvents: number; topIssues: { message: string; severity: string; count: number; score: number; rootCause?: string; suggestion?: string }[] } | null>(null)
+
+  useEffect(() => {
+    // 拼查询参数：hours + 顶部筛选（有值才带上）
+    const qs = new URLSearchParams({ hours: String(hours) })
+    if (filters.kind) qs.set('kind', filters.kind)
+    if (filters.severity) qs.set('severity', filters.severity)
+    if (filters.route) qs.set('route', filters.route)
+    fetch(`/api/report?${qs}`)
+      .then((res) => res.json())
+      .then(setReport)
+      .catch((err) => console.error('拉取报告失败:', err))
+  }, [hours, filters])
+
+  if (!report) return <Typography.Text type="secondary">报告生成中…</Typography.Text>
+
+  return (
+    <div>
+      <div style={{ marginBottom: 12 }}>
+        <Select
+          value={hours}
+          onChange={setHours}
+          options={[
+            { value: 24, label: '24 小时' },
+            { value: 48, label: '48 小时' },
+            { value: 168, label: '7 天' },
+          ]}
+          style={{ width: 120 }}
+        />
+        <Typography.Text type="secondary" style={{ marginLeft: 12 }}>
+          共 {report.totalEvents} 次错误 · 按严重度排序
+          {filters.kind || filters.severity || filters.route
+            ? `（已筛选：${filters.kind ?? ''} ${filters.severity ?? ''} ${filters.route ?? ''}）`
+            : ''}
+        </Typography.Text>
+      </div>
+      <List
+        dataSource={report.topIssues}
+        renderItem={(issue) => (
+          <List.Item>
+            <Card size="small" style={{ width: '100%' }}>
+              <Typography.Text strong>{issue.message}</Typography.Text>
+              <div style={{ marginTop: 4 }}>
+                <Tag color={issue.severity === 'critical' ? 'red' : issue.severity === 'high' ? 'orange' : 'default'}>
+                  {issue.severity}
+                </Tag>
+                <Tag>{issue.count} 次</Tag>
+                <Tooltip title="评分越高越该先修 = 出现次数 × 严重度权重(low=1,medium=2,high=3,critical=4) × 时间衰减(每12小时减半)">
+                  <Tag>评分 {issue.score.toFixed(1)}</Tag>
+                </Tooltip>
+              </div>
+              {issue.rootCause && (
+                <Typography.Paragraph style={{ marginTop: 8, marginBottom: 4 }}>
+                  <Typography.Text strong>原因：</Typography.Text>
+                  {issue.rootCause}
+                </Typography.Paragraph>
+              )}
+              {issue.suggestion && (
+                <Typography.Paragraph style={{ marginBottom: 0 }}>
+                  <Typography.Text strong>建议：</Typography.Text>
+                  {issue.suggestion}
+                </Typography.Paragraph>
+              )}
+            </Card>
+          </List.Item>
+        )}
+      />
+    </div>
   )
 }

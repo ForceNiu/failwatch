@@ -33,6 +33,9 @@ coverage/
 # ===== pnpm 临时残留（lockfile 原子写产生的空文件）=====
 _tmp_*
 
+# ===== WorkBuddy 项目数据（automations/memory，绝不进版本库）=====
+.workbuddy/
+
 # ===== TS 构建信息 =====
 *.tsbuildinfo
 
@@ -42,3 +45,6 @@ _tmp_*
 .vscode/
 *.local
 Thumbs.db
+
+# ===== M5 LLM 样本库（运行时录制，不进仓库）=====
+packages/collector/data/
