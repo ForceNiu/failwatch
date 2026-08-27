@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Collapse, List, Tag } from 'antd'
 import type { FailureCluster } from '../cluster'
 import type { FailureView } from '../types'
+import { formatDateTime } from '../utils/time'
 
 // 聚类视图：把分组卡片画出来（antd Collapse = 可折叠面板，点开看明细）
 function ClusterViewInner({ clusters }: { clusters: FailureCluster[] }) {
@@ -22,7 +23,7 @@ function ClusterViewInner({ clusters }: { clusters: FailureCluster[] }) {
           <List.Item>
             <List.Item.Meta
               title={row.id}
-              description={`${row.route} · ${row.createdAt}`}
+              description={`${row.route} · ${formatDateTime(row.timestamp)}`}
             />
           </List.Item>
         )}
