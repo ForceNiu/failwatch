@@ -150,7 +150,9 @@ router.post('/ingest', async (req, res) => {
   const row = toRow(result.data)
   const inserted = await insert(row)
   // M4：入库成功 → 广播"新失败来了"（SSE 频道推给所有收听者）
-  failureBus.emit('failure', row)
+  // 注意：广播 inserted（含 created_at 的完整行），不要用 row（InsertRow 没有 created_at）
+  // 否则 web 端 SSE 收到的条目 created_at 会是 undefined
+  failureBus.emit('failure', inserted)
   res.status(201).json({ ok: true, id: inserted.id })
 })
 

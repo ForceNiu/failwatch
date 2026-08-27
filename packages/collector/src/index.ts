@@ -4,6 +4,7 @@ import ingestRouter from './routes/ingest.js'
 import queryRouter from './routes/query.js'
 import eventsRouter from './routes/events.js'
 import reportRouter from './routes/report.js'
+import boomRouter from './routes/boom.js'
 
 const app = express()
 
@@ -19,11 +20,12 @@ app.use((_req, res, next) => {
 // 中间件：把请求体（JSON）解析成 JS 对象，否则 req.body 是 undefined
 app.use(express.json())
 
-// 挂载路由：POST /ingest（写入）+ GET /failures（查询）+ GET /events（SSE）+ GET /report（AI 报告）
+// 挂载路由：ingest（写入）+ failures（查询）+ events（SSE）+ report（AI 报告）+ boom（故意失败）
 app.use(ingestRouter)
 app.use(queryRouter)
 app.use(eventsRouter)
 app.use(reportRouter)
+app.use(boomRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true })
