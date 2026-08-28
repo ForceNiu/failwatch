@@ -87,9 +87,37 @@ SDK 验证（demo-app 示例商城）：需同时启动三个服务——
 | M4 | SSE 实时推送（新失败自动上板，客户端主动重连 + 心跳看门狗 + 状态灯） | ✅ 完成 |
 | M5 | AI 每日整合报告（LangGraph 分析流 + Sentry 评分模型） | ✅ 完成 |
 | M6 | demo-app 正式联调（示例商城接 SDK，固定错误绑定 + 双主题） | ✅ 完成 |
-| M7 | 部署：Vercel 上线（面试可演示） | ⏳ 规划中（可选） |
+| M7 | 公网部署（Vercel / Railway） | ⏳ 可选，暂未上线（以 GitHub 仓库 + 本地完整演示为主） |
 
-**已打通全链路**：浏览器抛错 → SDK 捕获打包 → POST /ingest → collector Zod 校验 → Neon 入库 → SSE 实时推送 → 看板列表/聚类展示（无需刷新）。当前进度约 90%（仅 M7 部署可选）。
+**已打通全链路**：浏览器抛错 → SDK 捕获打包 → POST /ingest → collector Zod 校验 → Neon 入库 → SSE 实时推送 → 看板列表/聚类展示（无需刷新）。当前进度约 95%（M7 公网部署为可选项）。
+
+## 界面预览
+
+> 以下截图来自真实运行的本地链路：示例商城触发错误 → SDK 上报 → collector 入库 → 看板 SSE 实时刷新。AI 报告由 DeepSeek 真实调用生成。
+
+### 示例商城（demo-app）
+
+7 类前端错误被有意埋入业务操作：加购触发 4xx/5xx 接口错误、结算触发未捕获 Promise 拒绝、查看详情触发 JS 运行时错误、图片缺失触发资源加载失败。
+
+![示例商城](./docs/screenshots/01-demo-app.png)
+
+### 监控面板 · 失败列表
+
+SSE 连接状态灯显示「实时」，新失败无需刷新即可自动追加到列表顶部。支持按类型 / 严重度 / 路由筛选。
+
+![监控面板-列表](./docs/screenshots/02-dashboard-list.png)
+
+### 监控面板 · 聚类视图
+
+按错误指纹自动分组，同一问题的重复出现会被折叠，方便判断哪些问题最值得优先修复。
+
+![监控面板-聚类](./docs/screenshots/03-dashboard-cluster.png)
+
+### 监控面板 · AI 报告
+
+默认 24 小时窗口，自动聚合 Top 问题并调用 DeepSeek 生成中文根因分析与修复建议。LLM 不可用时自动降级为历史样本或空白（监控系统不能因 AI 挂掉而失效）。
+
+![监控面板-AI报告](./docs/screenshots/04-dashboard-ai-report.png)
 
 ## 为什么用 monorepo
 
