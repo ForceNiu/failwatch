@@ -56,21 +56,36 @@ failwatch/
 
 ```bash
 pnpm install      # 安装全部依赖
-pnpm dev          # 启动 web 看板（Vite dev server，5173）
+pnpm dev          # 只启动 web 看板（Vite dev server，5173）
+pnpm dev:all      # 一键并发启动全部三个服务（推荐，见下）
 pnpm typecheck    # 全包 TypeScript 类型检查
-pnpm test         # 运行单测（vitest）
+pnpm test         # 运行单测（vitest，collector 40 + web 15 共 55 断言）
+pnpm lint         # ESLint 检查
 ```
 
-分包单独操作：
+一键启动全部服务（SDK 验证推荐用这条）：
 
 ```bash
-pnpm --filter @failwatch/collector dev   # 启动后端（4000 端口，需根目录 .env 的 DATABASE_URL）
+pnpm dev:all      # 并发启动 collector(4000) + web(5173) + demo-app(5175)
 ```
 
-SDK 验证（demo-app 示例商城）：需同时启动三个服务——
-- 后端 collector：`pnpm --filter @failwatch/collector dev`（4000，需根目录 `.env` 的 `DATABASE_URL`）
-- 看板 web：`pnpm dev`（5173）
-- 示例应用：`pnpm --filter @failwatch/demo-app dev`（5175）
+> 该命令会跳过没有 `dev` 脚本的 sdk 包。默认 `collector` 跑在 mock（模拟）模式；若要 AI 报告走真实 DeepSeek（深度求索）归因，请把 collector 换成 `pnpm --filter @failwatch/collector start:deepseek` 单独启动。
+
+三个服务与端口：
+
+| 服务 | 端口 | 启动命令 |
+|---|---|---|
+| 后端 collector | 4000 | `pnpm --filter @failwatch/collector dev`（需 `.env` 的 `DATABASE_URL`） |
+| 看板 web | 5173 | `pnpm dev` |
+| 示例应用 demo-app | 5175 | `pnpm --filter @failwatch/demo-app dev` |
+
+分包其它操作：
+
+```bash
+pnpm --filter @failwatch/collector start:deepseek   # 后端 + 真实 AI 归因
+pnpm --filter @failwatch/collector seed             # 一次性造 25 条测试数据
+pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（配合 SSE 看实时效果）
+```
 
 打开 http://localhost:5175 点「加购 / 结算 / 详情」故意触发错误 → 看板 http://localhost:5173 通过 SSE 实时（无需刷新）出现新记录，标题旁状态灯显示「实时」。
 
