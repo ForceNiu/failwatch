@@ -1,6 +1,7 @@
 // inferSeverity 的测试（TDD：先红后绿）
 import { describe, expect, it } from 'vitest'
 import { inferSeverity } from './severity'
+import type { FailureEvent } from '@failwatch/sdk'
 
 // 造事件：默认 js_error，可覆盖 kind/status（测试只需要这两个字段，其余固定）
 function makeEvent(over: Partial<{ kind: string; status: number; resourceType: string }> = {}) {
@@ -12,7 +13,7 @@ function makeEvent(over: Partial<{ kind: string; status: number; resourceType: s
     severity: 'high',
     breadcrumbs: [],
     ...over,
-  } as any // as any：测试里简化类型（生产代码有真实类型约束）
+  } as unknown as FailureEvent // 测试夹具：用真实事件类型替代 any（CODE_REVIEW 2.3 堵暗箱）；联合类型必填字段在测试中无关
 }
 
 describe('inferSeverity 严重度规则', () => {
