@@ -10,6 +10,9 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      # GitHub Actions runner 默认 UTC；项目面向中国用户，时间格式化测试依赖 GMT+8
+      TZ: Asia/Shanghai
     steps:
       - uses: actions/checkout@v4
 
