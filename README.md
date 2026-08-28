@@ -18,7 +18,7 @@ POST 上报
 Dashboard 看板（web）查询展示
    │
    ▼
-AI 每日/区间整合报告（LangGraph 分析流）
+AI 每日/区间整合报告（DeepSeek 真实归因 + mock 降级）
 ```
 
 核心设计：全链路共享**同一份 `FailureEvent` 类型定义**（`packages/sdk/src/types.ts`，判别联合 discriminated union），SDK / collector / web 三处直接 import，改一处编译期三处同步，杜绝"字段对不上"。
@@ -47,8 +47,8 @@ failwatch/
 | SDK | 原生 TS，无框架依赖 |
 | collector | Node.js + Express + Zod（运行时校验）+ postgres.js + Neon Postgres |
 | web | React + Vite + antd |
-| 测试 | Vitest（单测）+ GitHub Actions CI（typecheck / test / build） |
-| AI 分析 | LangGraph.js（分析流，M5） |
+| 测试 | Vitest（单测）+ GitHub Actions CI（typecheck / lint / test / build） |
+| AI 分析 | DeepSeek API（按 LLM_MODE 切换真实 AI / mock） |
 
 ## 本地开发
 
@@ -82,10 +82,10 @@ SDK 验证（demo-app 示例商城）：需同时启动三个服务——
 | M1 | SDK：`FailureEvent` 判别联合 + 全局捕获（onerror / unhandledrejection）+ 上报 | ✅ 完成 |
 | M2 | collector：Neon 建表存储 + Zod 校验 + /ingest + 查询路由 | ✅ 完成 |
 | M3 | Dashboard：失败列表 / 筛选栏 / 聚类视图 | ✅ 完成 |
-| — | 单测基线（vitest：groupFailures + filterFailures，5 断言） | ✅ 完成 |
-| — | CI（GitHub Actions：typecheck / test / build 三道门禁） | ✅ 完成 |
+| — | 单测（collector 40 + web 15，共 55 断言） | ✅ 完成 |
+| — | CI（GitHub Actions：typecheck / lint / test / build 四道门禁） | ✅ 完成 |
 | M4 | SSE 实时推送（新失败自动上板，客户端主动重连 + 心跳看门狗 + 状态灯） | ✅ 完成 |
-| M5 | AI 每日整合报告（LangGraph 分析流 + Sentry 评分模型） | ✅ 完成 |
+| M5 | AI 每日整合报告（DeepSeek 归因 + 参照 Sentry 的评分模型） | ✅ 完成 |
 | M6 | demo-app 正式联调（示例商城接 SDK，固定错误绑定 + 双主题） | ✅ 完成 |
 | M7 | 公网部署（Vercel / Railway） | ⏳ 可选，暂未上线（以 GitHub 仓库 + 本地完整演示为主） |
 
