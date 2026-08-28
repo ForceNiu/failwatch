@@ -53,7 +53,10 @@ export async function generateReport(
 ): Promise<FailureReport> {
   const now = Date.now()
   // ① 拉数据：时间窗内的所有失败行（filter 支持 from + 筛选条件）
-  const rows = await filter({ from: now - windowHours * 3600 * 1000, ...filters })
+  const rows = await filter({
+    from: now - windowHours * 3600 * 1000,
+    ...filters,
+  })
 
   // ② 聚类 + ③ 评分：每个组 → 一条 ReportIssue
   const issues: ReportIssue[] = groupRows(rows).map((group) => {

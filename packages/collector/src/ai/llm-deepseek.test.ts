@@ -11,25 +11,41 @@ let tmpDir: string
 
 function makeIssue(fp: string): ReportIssue {
   return {
-    fingerprint: fp, message: fp, kind: 'js_error', severity: 'high',
-    count: 1, score: 1, firstSeen: 1, lastSeen: 1,
+    fingerprint: fp,
+    message: fp,
+    kind: 'js_error',
+    severity: 'high',
+    count: 1,
+    score: 1,
+    firstSeen: 1,
+    lastSeen: 1,
   }
 }
 
 // 模拟 fetch：默认返回 DeepSeek 风格的成功响应
-function stubFetch(overrides: {
-  ok?: boolean
-  status?: number
-  content?: string
-  usage?: unknown
-} = {}) {
-  const { ok = true, status = 200, content = '[]', usage = undefined } = overrides
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-    ok,
-    status,
-    text: async () => 'server error',
-    json: async () => ({ choices: [{ message: { content } }], usage }),
-  }))
+function stubFetch(
+  overrides: {
+    ok?: boolean
+    status?: number
+    content?: string
+    usage?: unknown
+  } = {},
+) {
+  const {
+    ok = true,
+    status = 200,
+    content = '[]',
+    usage = undefined,
+  } = overrides
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok,
+      status,
+      text: async () => 'server error',
+      json: async () => ({ choices: [{ message: { content } }], usage }),
+    }),
+  )
 }
 
 beforeEach(() => {
@@ -46,7 +62,9 @@ afterEach(() => {
 describe('DeepSeekLLM 降级（P0 修复点）', () => {
   it('API 返回 500 时不抛错，有历史样本则回放', async () => {
     // 先造一条真实样本（模拟之前录过）
-    appendSamples([{ ...makeIssue('fp1'), rootCause: '历史根因', suggestion: '历史建议' }])
+    appendSamples([
+      { ...makeIssue('fp1'), rootCause: '历史根因', suggestion: '历史建议' },
+    ])
     stubFetch({ ok: false, status: 500 })
 
     const llm = new DeepSeekLLM()
@@ -77,7 +95,9 @@ describe('DeepSeekLLM 降级（P0 修复点）', () => {
 describe('DeepSeekLLM 正常路径', () => {
   it('API 正常返回时合并 rootCause/suggestion，并录制样本', async () => {
     stubFetch({
-      content: JSON.stringify([{ fingerprint: 'fp1', rootCause: '真根因', suggestion: '真建议' }]),
+      content: JSON.stringify([
+        { fingerprint: 'fp1', rootCause: '真根因', suggestion: '真建议' },
+      ]),
       usage: { prompt_tokens: 86, completion_tokens: 10, total_tokens: 96 },
     })
     const result = await new DeepSeekLLM().analyze([makeIssue('fp1')])
@@ -92,7 +112,9 @@ describe('DeepSeekLLM 正常路径', () => {
 
   it('LLM 返回的 fingerprint 不匹配时，不覆盖原问题（静默丢归因）', async () => {
     stubFetch({
-      content: JSON.stringify([{ fingerprint: '别的指纹', rootCause: 'x', suggestion: 'y' }]),
+      content: JSON.stringify([
+        { fingerprint: '别的指纹', rootCause: 'x', suggestion: 'y' },
+      ]),
     })
     const result = await new DeepSeekLLM().analyze([makeIssue('fp1')])
     expect(result[0].rootCause).toBeUndefined()
@@ -102,6 +124,8 @@ describe('DeepSeekLLM 正常路径', () => {
 describe('DeepSeekLLM 前置校验', () => {
   it('缺少 DEEPSEEK_API_KEY 时抛出明确错误', async () => {
     vi.stubEnv('DEEPSEEK_API_KEY', '')
-    await expect(new DeepSeekLLM().analyze([makeIssue('fp1')])).rejects.toThrow(/DEEPSEEK_API_KEY/)
+    await expect(new DeepSeekLLM().analyze([makeIssue('fp1')])).rejects.toThrow(
+      /DEEPSEEK_API_KEY/,
+    )
   })
 })

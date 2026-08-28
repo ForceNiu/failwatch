@@ -16,7 +16,9 @@ export class DeepSeekLLM implements LLM {
   async analyze(issues: ReportIssue[]): Promise<ReportIssue[]> {
     const apiKey = process.env.DEEPSEEK_API_KEY
     if (!apiKey) {
-      throw new Error('LLM_MODE=deepseek 但缺少 DEEPSEEK_API_KEY（.env 里配置）')
+      throw new Error(
+        'LLM_MODE=deepseek 但缺少 DEEPSEEK_API_KEY（.env 里配置）',
+      )
     }
 
     // ① 构造 prompt：把问题列表交给 LLM，让它逐条归因+建议（JSON 输出）
@@ -27,7 +29,14 @@ export class DeepSeekLLM implements LLM {
 问题：${JSON.stringify(issues.map((i) => ({ fingerprint: i.fingerprint, message: i.message, count: i.count, severity: i.severity })))}`
 
     // ② 调 DeepSeek（OpenAI 兼容格式），带超时
-    let data: { choices?: { message?: { content?: string } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } }
+    let data: {
+      choices?: { message?: { content?: string } }[]
+      usage?: {
+        prompt_tokens?: number
+        completion_tokens?: number
+        total_tokens?: number
+      }
+    }
     try {
       const resp = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
@@ -45,7 +54,10 @@ export class DeepSeekLLM implements LLM {
 
       // ③ API 非 2xx → 降级（不抛错，报告照常出；监控系统原则：LLM 挂了监控不能挂）
       if (!resp.ok) {
-        console.error(`DeepSeek API ${resp.status}:`, await resp.text().catch(() => ''))
+        console.error(
+          `DeepSeek API ${resp.status}:`,
+          await resp.text().catch(() => ''),
+        )
         return fallbackAnalysis(issues)
       }
       data = (await resp.json()) as typeof data

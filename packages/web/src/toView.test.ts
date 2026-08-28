@@ -29,7 +29,15 @@ describe('toView 转换', () => {
   // 用例③: toView(makeRaw({ route: null })) → expect(result.route).toBe('')
 
   it('按 kind 筛选，只留匹配的', () => {
-    const result = toView(makeRaw({ kind: 'api_error', url: '/api/login', method: 'POST', status: 500, message: null }))
+    const result = toView(
+      makeRaw({
+        kind: 'api_error',
+        url: '/api/login',
+        method: 'POST',
+        status: 500,
+        message: null,
+      }),
+    )
     expect(result.message).toEqual('POST /api/login (500)')
   })
 
@@ -39,12 +47,19 @@ describe('toView 转换', () => {
   })
 
   it('按route为null，返回空', () => {
-    const result = toView(makeRaw({route: null}))
+    const result = toView(makeRaw({ route: null }))
     expect(result.route).toEqual('')
   })
 
   it('resource_error 行 → 消息拼资源摘要', () => {
-    const result = toView(makeRaw({ kind: 'resource_error', resource_url: '/logo.png', resource_type: 'img', message: null }))
+    const result = toView(
+      makeRaw({
+        kind: 'resource_error',
+        resource_url: '/logo.png',
+        resource_type: 'img',
+        message: null,
+      }),
+    )
     expect(result.message).toBe('资源加载失败：/logo.png (img)')
   })
 })

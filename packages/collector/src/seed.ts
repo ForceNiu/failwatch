@@ -15,27 +15,89 @@ const WATCH_INTERVAL_MS = 2 * 60 * 1000 // 2 分钟
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SAMPLES: any[] = [
   // —— api_error：不同接口 + 不同状态码（5xx 服务端炸 / 4xx 请求问题）——
-  { kind: 'api_error', url: '/api/login', method: 'POST', status: 500, statusText: 'Internal Server Error' },
-  { kind: 'api_error', url: '/api/login', method: 'POST', status: 502, statusText: 'Bad Gateway' },
-  { kind: 'api_error', url: '/api/order/create', method: 'POST', status: 503, statusText: 'Service Unavailable' },
-  { kind: 'api_error', url: '/api/order/create', method: 'POST', status: 500, statusText: 'Internal Server Error' },
-  { kind: 'api_error', url: '/api/pay/confirm', method: 'POST', status: 500, statusText: 'Internal Server Error' },
-  { kind: 'api_error', url: '/api/user/info', method: 'GET', status: 401, statusText: 'Unauthorized' },
-  { kind: 'api_error', url: '/api/cart/list', method: 'GET', status: 400, statusText: 'Bad Request' },
-  { kind: 'api_error', url: '/api/search', method: 'GET', status: 504, statusText: 'Gateway Timeout' },
+  {
+    kind: 'api_error',
+    url: '/api/login',
+    method: 'POST',
+    status: 500,
+    statusText: 'Internal Server Error',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/login',
+    method: 'POST',
+    status: 502,
+    statusText: 'Bad Gateway',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/order/create',
+    method: 'POST',
+    status: 503,
+    statusText: 'Service Unavailable',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/order/create',
+    method: 'POST',
+    status: 500,
+    statusText: 'Internal Server Error',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/pay/confirm',
+    method: 'POST',
+    status: 500,
+    statusText: 'Internal Server Error',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/user/info',
+    method: 'GET',
+    status: 401,
+    statusText: 'Unauthorized',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/cart/list',
+    method: 'GET',
+    status: 400,
+    statusText: 'Bad Request',
+  },
+  {
+    kind: 'api_error',
+    url: '/api/search',
+    method: 'GET',
+    status: 504,
+    statusText: 'Gateway Timeout',
+  },
 
   // —— js_error：不同报错信息（页面脚本问题）——
-  { kind: 'js_error', message: 'Cannot read properties of undefined (reading map)' },
+  {
+    kind: 'js_error',
+    message: 'Cannot read properties of undefined (reading map)',
+  },
   { kind: 'js_error', message: 'render is not a function' },
   { kind: 'js_error', message: 'Failed to fetch dynamic import' },
-  { kind: 'js_error', message: 'Cannot read properties of null (reading length)' },
+  {
+    kind: 'js_error',
+    message: 'Cannot read properties of null (reading length)',
+  },
   { kind: 'js_error', message: 'x is not defined at eval' },
 
   // —— resource_error：不同资源类型（script=功能崩 / img/css=样式）——
-  { kind: 'resource_error', resourceUrl: '/js/main.chunk.js', resourceType: 'script' },
+  {
+    kind: 'resource_error',
+    resourceUrl: '/js/main.chunk.js',
+    resourceType: 'script',
+  },
   { kind: 'resource_error', resourceUrl: '/img/logo.png', resourceType: 'img' },
   { kind: 'resource_error', resourceUrl: '/css/app.css', resourceType: 'css' },
-  { kind: 'resource_error', resourceUrl: '/font/iconfont.woff2', resourceType: 'font' },
+  {
+    kind: 'resource_error',
+    resourceUrl: '/font/iconfont.woff2',
+    resourceType: 'font',
+  },
 
   // —— unhandled_rejection：不同拒绝原因（Promise 未处理）——
   { kind: 'unhandled_rejection', reason: 'Promise rejected: request timeout' },
@@ -44,12 +106,23 @@ const SAMPLES: any[] = [
 ]
 
 // 造一条完整事件（补 base 字段；severity 按规则给）
-function makeEvent(sample: (typeof SAMPLES)[number], i: number, route: string): FailureEvent {
-  const severity = sample.kind === 'api_error'
-    ? (sample.status >= 500 ? 'critical' : 'medium')
-    : sample.kind === 'js_error' ? 'high'
-    : sample.kind === 'resource_error' ? (sample.resourceType === 'script' ? 'high' : 'low')
-    : 'medium'
+function makeEvent(
+  sample: (typeof SAMPLES)[number],
+  i: number,
+  route: string,
+): FailureEvent {
+  const severity =
+    sample.kind === 'api_error'
+      ? sample.status >= 500
+        ? 'critical'
+        : 'medium'
+      : sample.kind === 'js_error'
+        ? 'high'
+        : sample.kind === 'resource_error'
+          ? sample.resourceType === 'script'
+            ? 'high'
+            : 'low'
+          : 'medium'
   return {
     ...sample,
     id: `seed-${Date.now()}-${i}`,
@@ -90,9 +163,13 @@ async function seedOnce(): Promise<void> {
 function seedWatch(): void {
   let i = 0
   console.log('定时模式：每 2 分钟发 1 条（Ctrl+C 停止）\n')
-  send(makeEvent(SAMPLES[i % SAMPLES.length], i++, '/watch')).catch(console.error)
+  send(makeEvent(SAMPLES[i % SAMPLES.length], i++, '/watch')).catch(
+    console.error,
+  )
   setInterval(() => {
-    send(makeEvent(SAMPLES[i % SAMPLES.length], i++, '/watch')).catch(console.error)
+    send(makeEvent(SAMPLES[i % SAMPLES.length], i++, '/watch')).catch(
+      console.error,
+    )
   }, WATCH_INTERVAL_MS)
 }
 

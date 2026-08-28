@@ -3,10 +3,20 @@ import { filterFailures } from './App'
 import type { FailureView } from './types'
 
 // 造数据工具：id + kind + severity + route，其余固定
-function makeItem(id: string, kind: string, severity: string, route: string): FailureView {
+function makeItem(
+  id: string,
+  kind: string,
+  severity: string,
+  route: string,
+): FailureView {
   return {
-    id, kind, severity, route,
-    message: 'x', timestamp: 1756000000000, createdAt: '2026-08-25T00:00:00.000Z',
+    id,
+    kind,
+    severity,
+    route,
+    message: 'x',
+    timestamp: 1756000000000,
+    createdAt: '2026-08-25T00:00:00.000Z',
   }
 }
 

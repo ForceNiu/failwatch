@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Card, ConfigProvider, List, Select, Tabs, Tag, Tooltip, Typography } from 'antd'
+import {
+  Card,
+  ConfigProvider,
+  List,
+  Select,
+  Tabs,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd'
 import { useSSE, type SSEStatus } from './useSSE'
 import { FailureList } from './components/FailureList'
 import { FilterBar } from './components/FilterBar'
@@ -50,7 +59,10 @@ export function toView(row: RawFailure): FailureView {
 }
 
 // 纯函数：按筛选条件过滤（导出：给单测用）
-export function filterFailures(items: FailureView[], f: FailureFilters): FailureView[] {
+export function filterFailures(
+  items: FailureView[],
+  f: FailureFilters,
+): FailureView[] {
   return items.filter(
     (item) =>
       (!f.kind || item.kind === f.kind) &&
@@ -84,7 +96,10 @@ export default function App() {
   const [filters, setFilters] = useState<FailureFilters>({})
 
   // ④ useMemo 缓存过滤结果：items 或 filters 没变就不重算
-  const filtered = useMemo(() => filterFailures(items, filters), [items, filters])
+  const filtered = useMemo(
+    () => filterFailures(items, filters),
+    [items, filters],
+  )
 
   // ⑤ 聚类：把过滤后的数据按指纹分组（也是 useMemo 缓存）
   const clusters = useMemo(() => groupFailures(filtered), [filtered])
@@ -92,7 +107,10 @@ export default function App() {
   return (
     <ConfigProvider>
       <div style={{ padding: 24 }}>
-        <Typography.Title level={2} style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+        <Typography.Title
+          level={2}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}
+        >
           FailWatch 失败监控平台
           <SSEBadge status={sseStatus} />
         </Typography.Title>
@@ -124,8 +142,18 @@ export default function App() {
 
 // SSE 连接状态灯：实时(绿) / 重连中(黄) / 连接中(灰)
 function SSEBadge({ status }: { status: SSEStatus }) {
-  const color = status === 'live' ? '#52c41a' : status === 'reconnecting' ? '#faad14' : '#999'
-  const label = status === 'live' ? '实时' : status === 'reconnecting' ? '重连中…' : '连接中…'
+  const color =
+    status === 'live'
+      ? '#52c41a'
+      : status === 'reconnecting'
+        ? '#faad14'
+        : '#999'
+  const label =
+    status === 'live'
+      ? '实时'
+      : status === 'reconnecting'
+        ? '重连中…'
+        : '连接中…'
   return (
     <Tooltip title="SSE 实时推送连接状态（代理静默掐断会自动恢复）">
       <span
@@ -138,7 +166,15 @@ function SSEBadge({ status }: { status: SSEStatus }) {
           gap: 6,
         }}
       >
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block' }} />
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: color,
+            display: 'inline-block',
+          }}
+        />
         {label}
       </span>
     </Tooltip>
@@ -149,7 +185,19 @@ function SSEBadge({ status }: { status: SSEStatus }) {
 // filters：顶部筛选（kind/severity/route）——现在也作用于报告（M5 调试补上）
 function ReportView({ filters }: { filters: FailureFilters }) {
   const [hours, setHours] = useState(24) // 时间窗（小时）
-  const [report, setReport] = useState<{ generatedAt: number; windowHours: number; totalEvents: number; topIssues: { message: string; severity: string; count: number; score: number; rootCause?: string; suggestion?: string }[] } | null>(null)
+  const [report, setReport] = useState<{
+    generatedAt: number
+    windowHours: number
+    totalEvents: number
+    topIssues: {
+      message: string
+      severity: string
+      count: number
+      score: number
+      rootCause?: string
+      suggestion?: string
+    }[]
+  } | null>(null)
 
   useEffect(() => {
     // 拼查询参数：hours + 顶部筛选（有值才带上）
@@ -163,7 +211,8 @@ function ReportView({ filters }: { filters: FailureFilters }) {
       .catch((err) => console.error('拉取报告失败:', err))
   }, [hours, filters])
 
-  if (!report) return <Typography.Text type="secondary">报告生成中…</Typography.Text>
+  if (!report)
+    return <Typography.Text type="secondary">报告生成中…</Typography.Text>
 
   return (
     <div>
@@ -192,7 +241,15 @@ function ReportView({ filters }: { filters: FailureFilters }) {
             <Card size="small" style={{ width: '100%' }}>
               <Typography.Text strong>{issue.message}</Typography.Text>
               <div style={{ marginTop: 4 }}>
-                <Tag color={issue.severity === 'critical' ? 'red' : issue.severity === 'high' ? 'orange' : 'default'}>
+                <Tag
+                  color={
+                    issue.severity === 'critical'
+                      ? 'red'
+                      : issue.severity === 'high'
+                        ? 'orange'
+                        : 'default'
+                  }
+                >
                   {issue.severity}
                 </Tag>
                 <Tag>{issue.count} 次</Tag>

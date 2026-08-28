@@ -14,7 +14,9 @@ const databaseUrl = process.env.DATABASE_URL
 let _sql: ReturnType<typeof postgres> | null = null
 function getSql(): ReturnType<typeof postgres> {
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL 未设置：请确认根目录 .env 存在，且通过 --env-file=../../.env 启动')
+    throw new Error(
+      'DATABASE_URL 未设置：请确认根目录 .env 存在，且通过 --env-file=../../.env 启动',
+    )
   }
   if (!_sql) {
     // 连接池：postgres.js 连 Neon，sslmode=require
@@ -28,30 +30,30 @@ function getSql(): ReturnType<typeof postgres> {
 // 规则：非空列 → 字段: 类型；可空列 → 字段?: 类型；禁用 any。
 export interface FailureRow {
   // TODO 填
-  id: string;
-  kind: string;
-  timestamp: number;
-  route?: string;
-  user_agent?: string;
-  severity: string;
-  breadcrumbs?: string;
-  release?: string;
-  user_id?: string;
-  message?: string;
-  stack?: string;
-  filename?: string;
-  lineno?: number;
-  colno?: number;
-  reason?: string;
-  url?: string;
-  method?: string;
-  status?: number;
-  status_text?: string;
-  response_body?: string;
-  resource_url?: string;
-  resource_type?: string;
-  source?: string;
-  created_at: string;
+  id: string
+  kind: string
+  timestamp: number
+  route?: string
+  user_agent?: string
+  severity: string
+  breadcrumbs?: string
+  release?: string
+  user_id?: string
+  message?: string
+  stack?: string
+  filename?: string
+  lineno?: number
+  colno?: number
+  reason?: string
+  url?: string
+  method?: string
+  status?: number
+  status_text?: string
+  response_body?: string
+  resource_url?: string
+  resource_type?: string
+  source?: string
+  created_at: string
 }
 
 // ===== 建表（表结构固定，SQL 我来写，你负责看懂每一行）=====
@@ -131,11 +133,11 @@ export async function list(limit = 100): Promise<FailureRow[]> {
 }
 
 export interface FailureFilter {
-  kind?: string;
-  severity?: string;
-  route?: string;
-  from?: number;
-  to?: number;
+  kind?: string
+  severity?: string
+  route?: string
+  from?: number
+  to?: number
 }
 
 export async function filter(f: FailureFilter): Promise<FailureRow[]> {
@@ -149,5 +151,5 @@ export async function filter(f: FailureFilter): Promise<FailureRow[]> {
       AND (${f.to ?? null}::bigint IS NULL OR timestamp <= ${f.to ?? null})
     ORDER BY timestamp DESC
   `
-  return rows as unknown as FailureRow[];
+  return rows as unknown as FailureRow[]
 }

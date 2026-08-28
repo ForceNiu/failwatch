@@ -7,7 +7,11 @@ import type { ReportIssue } from './types.js'
 
 // 样本条目 = 问题分析 + 可选 usage（token 消耗，成本可追踪）
 export interface SampleEntry extends ReportIssue {
-  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+  usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+  }
 }
 
 // 默认样本库路径（相对本文件：packages/collector/data/llm-samples.json）
@@ -34,7 +38,10 @@ export function loadSamples(): SampleEntry[] {
 }
 
 // 录制：目录不存在自动创建（防 ENOENT）→ 按 fingerprint 去重（新覆盖旧）→ 上限截断
-export function appendSamples(newSamples: ReportIssue[], usage?: SampleEntry['usage']): void {
+export function appendSamples(
+  newSamples: ReportIssue[],
+  usage?: SampleEntry['usage'],
+): void {
   mkdirSync(path.dirname(getSamplesFile()), { recursive: true })
 
   // Map 保证 fingerprint 唯一：先载入旧样本，再写入新样本（新分析覆盖旧分析）

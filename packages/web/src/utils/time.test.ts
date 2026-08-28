@@ -13,7 +13,9 @@ describe('formatDateTime', () => {
   })
 
   it('ISO 字符串也能解析', () => {
-    expect(formatDateTime('2026-08-27T08:00:00.000Z')).toBe('2026-08-27 16:00:00')
+    expect(formatDateTime('2026-08-27T08:00:00.000Z')).toBe(
+      '2026-08-27 16:00:00',
+    )
   })
 })
 
