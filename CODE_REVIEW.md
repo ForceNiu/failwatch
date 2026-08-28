@@ -81,24 +81,26 @@
 
 ### 3.3 谁来审
 当前为单人项目，采用**双轨审查**：
-1. **自动轨（CI）**：typecheck + test + build 三道门禁必须全绿（见 3.5）。
+1. **自动轨（CI）**：format + typecheck + lint + test + build 五道门禁必须全绿（见 3.5）。
 2. **人工 / AI 轨**：作者可随时把 diff 交给「代码审查专家」做一轮结构化评审（🔴/🟡/💭）。**重大改动**（新路由、安全相关、SSE / 长连接）**强制**走这一轨。
 
 ### 3.4 PR 模板
 已建 `.github/PULL_REQUEST_TEMPLATE.md`，把上述自审清单固化进每次 PR。
 
 ### 3.5 CI 门禁现状与缺口（重要）
-现有 `ci.yml` 三道门禁：
+现有 `ci.yml` 五道门禁：
 
-| 门禁 | 状态 | 缺口 |
-|---|---|---|
-| Typecheck（`pnpm -r typecheck`） | ✅ | 覆盖三包，OK |
-| Unit test（`pnpm -r --if-present test`） | ✅ | web + collector 全包跑（2026-08-27 纳入 collector 40 测试）；`store.ts` 懒加载使 CI 无 `DATABASE_URL` 也能绿 |
-| Build（`pnpm -r build`） | ✅ | 建 sdk + web |
+| 门禁 | 命令 | 状态 | 说明 |
+|---|---|---|---|
+| Format | `pnpm format:check` | ✅ | Prettier 全仓检查（2026-08-29 纳入，最便宜的门禁放最前） |
+| Typecheck | `pnpm -r typecheck` | ✅ | 覆盖三包 |
+| Lint | `pnpm lint` | ✅ | ESLint flat config，强制 `no-explicit-any` 堵暗箱 |
+| Unit test | `pnpm -r --if-present test` | ✅ | web + collector 全包跑（collector 40 + web 15 = 55 测试）；`store.ts` 懒加载使 CI 无 `DATABASE_URL` 也能绿 |
+| Build | `pnpm -r build` | ✅ | 建 sdk + web |
 
-**补门禁（已于 2026-08-27 实施）**：
-- ✅ collector 测试已纳入 CI（`store.ts` 改懒加载 + `ci.yml` 改 `pnpm -r --if-present test`）。
-- ✅ 引入 ESLint + Prettier（根 `eslint.config.js` flat config + `@typescript-eslint` + `eslint-config-prettier`，强制 `no-explicit-any` 堵暗箱；`ci.yml` 增第四道门禁 `pnpm lint`）。
+**门禁演进记录**：
+- 2026-08-27：collector 测试纳入 CI（`store.ts` 改懒加载 + `ci.yml` 改 `pnpm -r --if-present test`）；引入 ESLint + Prettier（根 `eslint.config.js` + `@typescript-eslint` + `eslint-config-prettier`），增 `pnpm lint` 门禁。
+- 2026-08-29：增 `pnpm format:check` 门禁（第四道→五道），并一次性把 32 个历史文件统一 `prettier --write`（此前仅新写文件符合规范，历史 `src/` 一直是漏网状态，导致 format 门禁一加就红）。
 
 ### 3.6 合并规则
 - 🔴 门禁全绿 + 自审清单勾满，才允许合并。
@@ -137,5 +139,6 @@
 - [x] 确认把本标准写入仓库（本文件已就位：`CODE_REVIEW.md`）。
 - [x] 确认 PR 模板启用（`.github/PULL_REQUEST_TEMPLATE.md`）。
 - [x] 是否实施 🔴 CI 缺口：补 `collector test` 门禁？（✅ 已做：store.ts 懒加载 + ci.yml 全包测试）
-- [x] 是否引入 ESLint + Prettier？（✅ 已做：根 eslint.config.js + CI 第四道门禁 `pnpm lint`）
+- [x] 是否引入 ESLint + Prettier？（✅ 已做：根 eslint.config.js + CI 门禁 `pnpm lint`）
+- [x] 是否把 format 纳入门禁？（✅ 已做：CI 增 `pnpm format:check`，五道门禁；32 个历史文件统一格式化）
 - [x] CORS / 限流 / 超时 / 写入鉴权：`ALLOWED_ORIGINS` 白名单 ✅；`express.json` 1mb 上限 ✅；`requestTimeout=30000` ✅；`/ingest` 限流 + 可选 `INGEST_API_KEY` 鉴权 ✅（生产需 Redis 限流 + SDK 携带 apiKey）
