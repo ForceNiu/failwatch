@@ -2,6 +2,7 @@
   "name": "failwatch",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "build": "pnpm -r --if-present build",
     "dev": "pnpm --filter @failwatch/web dev",
