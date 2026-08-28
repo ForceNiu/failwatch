@@ -11,16 +11,26 @@ let tmpDir: string
 // 造一条问题（rootCause/suggestion 都带上，模拟真实样本）
 function makeIssue(fp: string): ReportIssue {
   return {
-    fingerprint: fp, message: fp, kind: 'js_error', severity: 'high',
-    count: 1, score: 1, firstSeen: 1, lastSeen: 1,
-    rootCause: `rc-${fp}`, suggestion: `sg-${fp}`,
+    fingerprint: fp,
+    message: fp,
+    kind: 'js_error',
+    severity: 'high',
+    count: 1,
+    score: 1,
+    firstSeen: 1,
+    lastSeen: 1,
+    rootCause: `rc-${fp}`,
+    suggestion: `sg-${fp}`,
   }
 }
 
 // 每个用例独立临时目录（放在深层子目录，专门验证"目录不存在自动建"）
 beforeEach(() => {
   tmpDir = mkdtempSync(path.join(tmpdir(), 'fw-samples-'))
-  vi.stubEnv('LLM_SAMPLES_FILE', path.join(tmpDir, 'nested', 'deep', 'llm-samples.json'))
+  vi.stubEnv(
+    'LLM_SAMPLES_FILE',
+    path.join(tmpDir, 'nested', 'deep', 'llm-samples.json'),
+  )
 })
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -30,7 +40,9 @@ afterEach(() => {
 describe('appendSamples 目录自动创建（P0 修复点）', () => {
   it('目录不存在时自动创建并写入文件', () => {
     appendSamples([makeIssue('fp1')])
-    expect(existsSync(path.join(tmpDir, 'nested', 'deep', 'llm-samples.json'))).toBe(true)
+    expect(
+      existsSync(path.join(tmpDir, 'nested', 'deep', 'llm-samples.json')),
+    ).toBe(true)
     expect(loadSamples()).toHaveLength(1)
   })
 })
@@ -38,7 +50,9 @@ describe('appendSamples 目录自动创建（P0 修复点）', () => {
 describe('样本去重（P1 修复点）', () => {
   it('相同 fingerprint 只保留 1 条，新样本覆盖旧样本', () => {
     appendSamples([makeIssue('fp1')])
-    appendSamples([{ ...makeIssue('fp1'), rootCause: '新根因', suggestion: '新建议' }])
+    appendSamples([
+      { ...makeIssue('fp1'), rootCause: '新根因', suggestion: '新建议' },
+    ])
     const samples = loadSamples()
     expect(samples).toHaveLength(1)
     expect(samples[0].rootCause).toBe('新根因')
@@ -53,13 +67,17 @@ describe('样本去重（P1 修复点）', () => {
 
 describe('样本上限（P1 修复点）', () => {
   it(`超过 ${SAMPLES_MAX} 条时截断，只保留最近的部分`, () => {
-    const batch = Array.from({ length: SAMPLES_MAX + 50 }, (_, i) => makeIssue(`fp-${i}`))
+    const batch = Array.from({ length: SAMPLES_MAX + 50 }, (_, i) =>
+      makeIssue(`fp-${i}`),
+    )
     appendSamples(batch)
     const samples = loadSamples()
     expect(samples).toHaveLength(SAMPLES_MAX)
     // 保留的是靠后的指纹（最早的被淘汰）
     expect(samples[0].fingerprint).toBe(`fp-${50}`)
-    expect(samples[samples.length - 1].fingerprint).toBe(`fp-${SAMPLES_MAX + 49}`)
+    expect(samples[samples.length - 1].fingerprint).toBe(
+      `fp-${SAMPLES_MAX + 49}`,
+    )
   })
 })
 
@@ -80,8 +98,16 @@ describe('loadSamples 容错', () => {
 
 describe('usage 录制（P2）', () => {
   it('录制时携带 usage 字段（成本可追踪）', () => {
-    appendSamples([makeIssue('fp1')], { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 })
+    appendSamples([makeIssue('fp1')], {
+      prompt_tokens: 10,
+      completion_tokens: 20,
+      total_tokens: 30,
+    })
     const samples = loadSamples()
-    expect(samples[0].usage).toEqual({ prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 })
+    expect(samples[0].usage).toEqual({
+      prompt_tokens: 10,
+      completion_tokens: 20,
+      total_tokens: 30,
+    })
   })
 })

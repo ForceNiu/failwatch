@@ -16,7 +16,13 @@ function base(route: string) {
 }
 
 // 接口错误上报（加购时 /api/boom 返回错误状态 → 构造 api_error）
-export async function reportApiError(p: { route: string; url: string; method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'; status: number; statusText?: string }) {
+export async function reportApiError(p: {
+  route: string
+  url: string
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+  status: number
+  statusText?: string
+}) {
   const event: ApiErrorEvent = {
     ...base(p.route),
     kind: 'api_error',
@@ -33,7 +39,11 @@ export async function reportApiError(p: { route: string; url: string; method: 'G
 }
 
 // 资源错误上报（商品图加载失败时 onError 触发）
-export async function reportResourceError(p: { route: string; resourceUrl: string; resourceType: 'script' | 'link' | 'img' | 'css' | 'font' | 'media' }) {
+export async function reportResourceError(p: {
+  route: string
+  resourceUrl: string
+  resourceType: 'script' | 'link' | 'img' | 'css' | 'font' | 'media'
+}) {
   const event: ResourceErrorEvent = {
     ...base(p.route),
     kind: 'resource_error',

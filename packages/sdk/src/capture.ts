@@ -8,12 +8,12 @@ import { send } from './transport.js'
 // 生成所有失败都带的公共字段（对照 M1 的 BaseFailure）
 function base() {
   return {
-    id: crypto.randomUUID(),          // 每条事件的唯一 ID
-    timestamp: Date.now(),            // 发生时间（毫秒）
-    route: location.pathname,         // 当前页面路径
-    userAgent: navigator.userAgent,   // 浏览器标识
-    severity: 'high' as const,        // 默认高严重度
-    breadcrumbs: [],                  // 行为轨迹（M1.3 扩展，先空数组）
+    id: crypto.randomUUID(), // 每条事件的唯一 ID
+    timestamp: Date.now(), // 发生时间（毫秒）
+    route: location.pathname, // 当前页面路径
+    userAgent: navigator.userAgent, // 浏览器标识
+    severity: 'high' as const, // 默认高严重度
+    breadcrumbs: [], // 行为轨迹（M1.3 扩展，先空数组）
   }
 }
 
@@ -24,15 +24,17 @@ function base() {
 export function captureJsError(error: Error): JsErrorEvent {
   return {
     // TODO 填：...base() + kind/message/stack 等
-    ...base(),                 // 公共字段（id/timestamp/route/userAgent/severity/breadcrumbs）
-    kind: 'js_error',          // 判别联合的"种类标签"
-    message: error.message,    // 错误信息
-    stack: error.stack,        // 调用栈
+    ...base(), // 公共字段（id/timestamp/route/userAgent/severity/breadcrumbs）
+    kind: 'js_error', // 判别联合的"种类标签"
+    message: error.message, // 错误信息
+    stack: error.stack, // 调用栈
   }
 }
 
 // 打包：把 Promise 拒绝原因 → UnhandledRejectionEvent
-export function captureUnhandledRejection(reason: unknown): UnhandledRejectionEvent {
+export function captureUnhandledRejection(
+  reason: unknown,
+): UnhandledRejectionEvent {
   const message = reason instanceof Error ? reason.message : String(reason)
   const stack = reason instanceof Error ? reason.stack : undefined
   return {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,9 @@
   </head>
   <body>
     <h1>FailWatch SDK Demo</h1>
-    <p>点下面按钮，故意抛一个错误 → SDK 应该把它上报到 collector → Neon 里多一条</p>
+    <p>
+      点下面按钮，故意抛一个错误 → SDK 应该把它上报到 collector → Neon 里多一条
+    </p>
     <button id="boom">故意抛错（js_error）</button>
     <button id="reject">故意拒绝 Promise（unhandled_rejection）</button>
     <script type="module" src="/src/demo.ts"></script>

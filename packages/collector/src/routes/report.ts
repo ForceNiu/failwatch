@@ -9,8 +9,10 @@ const router = Router()
 router.get('/report', async (req, res) => {
   const hours = Number(req.query.hours) || 24
   const kind = typeof req.query.kind === 'string' ? req.query.kind : undefined
-  const severity = typeof req.query.severity === 'string' ? req.query.severity : undefined
-  const route = typeof req.query.route === 'string' ? req.query.route : undefined
+  const severity =
+    typeof req.query.severity === 'string' ? req.query.severity : undefined
+  const route =
+    typeof req.query.route === 'string' ? req.query.route : undefined
   try {
     const report = await generateReport(hours, { kind, severity, route })
     res.json(report)

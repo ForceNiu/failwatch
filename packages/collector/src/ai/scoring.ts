@@ -16,7 +16,12 @@ export function ageDecay(firstSeen: number, now: number): number {
 }
 
 // 综合评分：又严重 × 又多 × 又新 → 分高，排序依据
-export function scoreCluster(count: number, severity: string, firstSeen: number, now: number): number {
+export function scoreCluster(
+  count: number,
+  severity: string,
+  firstSeen: number,
+  now: number,
+): number {
   return count * severityWeight(severity) * ageDecay(firstSeen, now)
 }
 

@@ -11,8 +11,14 @@ let tmpDir: string
 
 function makeIssue(fp: string): ReportIssue {
   return {
-    fingerprint: fp, message: fp, kind: 'js_error', severity: 'high',
-    count: 1, score: 1, firstSeen: 1, lastSeen: 1,
+    fingerprint: fp,
+    message: fp,
+    kind: 'js_error',
+    severity: 'high',
+    count: 1,
+    score: 1,
+    firstSeen: 1,
+    lastSeen: 1,
   }
 }
 
@@ -33,7 +39,10 @@ describe('MockLLM 回放（P1 修复点）', () => {
       { ...makeIssue('fp-b'), rootCause: '根因B', suggestion: '建议B' },
     ])
     // 传入顺序：b, a（打乱）
-    const result = await new MockLLM().analyze([makeIssue('fp-b'), makeIssue('fp-a')])
+    const result = await new MockLLM().analyze([
+      makeIssue('fp-b'),
+      makeIssue('fp-a'),
+    ])
 
     expect(result[0].rootCause).toBe('根因B') // fp-b 拿到自己的
     expect(result[1].rootCause).toBe('根因A') // fp-a 拿到自己的
@@ -46,6 +55,8 @@ describe('MockLLM 回放（P1 修复点）', () => {
 
   it('样本库为空时全部用【mock】假数据', async () => {
     const result = await new MockLLM().analyze([makeIssue('a'), makeIssue('b')])
-    expect(result.every((r) => String(r.rootCause).includes('【mock】'))).toBe(true)
+    expect(result.every((r) => String(r.rootCause).includes('【mock】'))).toBe(
+      true,
+    )
   })
 })

@@ -47,7 +47,7 @@ failwatch/
 | SDK | 原生 TS，无框架依赖 |
 | collector | Node.js + Express + Zod（运行时校验）+ postgres.js + Neon Postgres |
 | web | React + Vite + antd |
-| 测试 | Vitest（单测）+ GitHub Actions CI（typecheck / lint / test / build） |
+| 测试 | Vitest（单测）+ GitHub Actions CI（format / typecheck / lint / test / build 五道门禁） |
 | AI 分析 | DeepSeek API（按 LLM_MODE 切换真实 AI / mock） |
 
 ## 本地开发
@@ -61,6 +61,7 @@ pnpm dev:all      # 一键并发启动全部三个服务（推荐，见下）
 pnpm typecheck    # 全包 TypeScript 类型检查
 pnpm test         # 运行单测（vitest，collector 40 + web 15 共 55 断言）
 pnpm lint         # ESLint 检查
+pnpm format       # Prettier 自动格式化（CI 用 format:check 卡门禁）
 ```
 
 一键启动全部服务（SDK 验证推荐用这条）：
@@ -98,7 +99,7 @@ pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（�
 | M2 | collector：Neon 建表存储 + Zod 校验 + /ingest + 查询路由 | ✅ 完成 |
 | M3 | Dashboard：失败列表 / 筛选栏 / 聚类视图 | ✅ 完成 |
 | — | 单测（collector 40 + web 15，共 55 断言） | ✅ 完成 |
-| — | CI（GitHub Actions：typecheck / lint / test / build 四道门禁） | ✅ 完成 |
+| — | CI（GitHub Actions：format / typecheck / lint / test / build 五道门禁） | ✅ 完成 |
 | M4 | SSE 实时推送（新失败自动上板，客户端主动重连 + 心跳看门狗 + 状态灯） | ✅ 完成 |
 | M5 | AI 每日整合报告（DeepSeek 归因 + 参照 Sentry 的评分模型） | ✅ 完成 |
 | M6 | demo-app 正式联调（示例商城接 SDK，固定错误绑定 + 双主题） | ✅ 完成 |

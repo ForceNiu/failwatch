@@ -4,7 +4,9 @@ import { inferSeverity } from './severity'
 import type { FailureEvent } from '@failwatch/sdk'
 
 // 造事件：默认 js_error，可覆盖 kind/status（测试只需要这两个字段，其余固定）
-function makeEvent(over: Partial<{ kind: string; status: number; resourceType: string }> = {}) {
+function makeEvent(
+  over: Partial<{ kind: string; status: number; resourceType: string }> = {},
+) {
   return {
     kind: 'js_error',
     timestamp: 1,
@@ -18,11 +20,15 @@ function makeEvent(over: Partial<{ kind: string; status: number; resourceType: s
 
 describe('inferSeverity 严重度规则', () => {
   it('api_error 500 → critical（服务端炸，最严重）', () => {
-    expect(inferSeverity(makeEvent({ kind: 'api_error', status: 500 }))).toBe('critical')
+    expect(inferSeverity(makeEvent({ kind: 'api_error', status: 500 }))).toBe(
+      'critical',
+    )
   })
 
   it('api_error 400 → medium（请求方问题，一般）', () => {
-    expect(inferSeverity(makeEvent({ kind: 'api_error', status: 400 }))).toBe('medium')
+    expect(inferSeverity(makeEvent({ kind: 'api_error', status: 400 }))).toBe(
+      'medium',
+    )
   })
 
   it('js_error → high（脚本崩，交互坏）', () => {
@@ -30,14 +36,22 @@ describe('inferSeverity 严重度规则', () => {
   })
 
   it('unhandled_rejection → medium（可能静默失败）', () => {
-    expect(inferSeverity(makeEvent({ kind: 'unhandled_rejection' }))).toBe('medium')
+    expect(inferSeverity(makeEvent({ kind: 'unhandled_rejection' }))).toBe(
+      'medium',
+    )
   })
 
   it('resource_error script → high（JS 脚本加载失败 = 功能崩）', () => {
-    expect(inferSeverity(makeEvent({ kind: 'resource_error', resourceType: 'script' }))).toBe('high')
+    expect(
+      inferSeverity(
+        makeEvent({ kind: 'resource_error', resourceType: 'script' }),
+      ),
+    ).toBe('high')
   })
 
   it('resource_error img → low（图片失败 = 样式瑕疵）', () => {
-    expect(inferSeverity(makeEvent({ kind: 'resource_error', resourceType: 'img' }))).toBe('low')
+    expect(
+      inferSeverity(makeEvent({ kind: 'resource_error', resourceType: 'img' })),
+    ).toBe('low')
   })
 })

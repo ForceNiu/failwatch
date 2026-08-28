@@ -1,5 +1,5 @@
-# FailWatch CI：每次 push / PR 自动跑四道门禁
-# typecheck → lint → 单测 → build
+# FailWatch CI：每次 push / PR 自动跑五道门禁
+# format → typecheck → lint → 单测 → build
 name: CI
 
 on:
@@ -29,18 +29,22 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # 门禁 1：类型检查（sdk / web / collector 全包）
+      # 门禁 1：格式检查（Prettier，最便宜的门禁先跑，失败最快反馈）
+      - name: Format check
+        run: pnpm format:check
+
+      # 门禁 2：类型检查（sdk / web / collector 全包）
       - name: Typecheck
         run: pnpm typecheck
 
-      # 门禁 2：风格与暗箱拦截（ESLint，强制 no-explicit-any；CODE_REVIEW.md 2.3）
+      # 门禁 3：风格与暗箱拦截（ESLint，强制 no-explicit-any；CODE_REVIEW.md 2.3）
       - name: Lint
         run: pnpm lint
 
-      # 门禁 3：单元测试（vitest，web + collector 全包都跑）
+      # 门禁 4：单元测试（vitest，web + collector 全包都跑）
       - name: Unit tests
         run: pnpm -r --if-present test
 
-      # 门禁 4：构建（web 能打包 = 生产可部署）
+      # 门禁 5：构建（web 能打包 = 生产可部署）
       - name: Build
         run: pnpm build

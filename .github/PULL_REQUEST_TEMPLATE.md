@@ -8,6 +8,8 @@
 <!-- 命令 / 截图 / 实测现象。如：pnpm typecheck 全绿、POST /ingest 返回 201、SSE 流收到 data 行 -->
 
 ## 自审清单（合并前必勾）
+- [ ] `pnpm format:check` 全绿（Prettier；不过就跑 `pnpm format`）
+- [ ] `pnpm lint` 全绿（ESLint，含 `no-explicit-any`）
 - [ ] `pnpm typecheck` 全绿（sdk / collector / web）
 - [ ] `pnpm --filter @failwatch/web test` 全绿
 - [ ] `pnpm --filter @failwatch/collector test` 全绿（若改了 collector）

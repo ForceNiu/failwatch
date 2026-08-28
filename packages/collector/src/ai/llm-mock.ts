@@ -21,7 +21,11 @@ export class MockLLM implements LLM {
     return issues.map((issue) => {
       const real = samples.find((s) => s.fingerprint === issue.fingerprint)
       if (real?.rootCause && real?.suggestion) {
-        return { ...issue, rootCause: real.rootCause, suggestion: real.suggestion }
+        return {
+          ...issue,
+          rootCause: real.rootCause,
+          suggestion: real.suggestion,
+        }
       }
       return fakeAnalysis(issue)
     })

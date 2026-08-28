@@ -73,7 +73,11 @@ export function useSSE(onMessage: (data: string) => void): SSEStatus {
       open()
       // 看门狗：每 10s 检查，35s 无事件 → 强制重连（防半开）
       watchdogTimer = setInterval(() => {
-        if (!closedByUs && esRef.current && Date.now() - lastMsgRef.current > WATCHDOG_MS) {
+        if (
+          !closedByUs &&
+          esRef.current &&
+          Date.now() - lastMsgRef.current > WATCHDOG_MS
+        ) {
           esRef.current.close()
           esRef.current = null
           open()

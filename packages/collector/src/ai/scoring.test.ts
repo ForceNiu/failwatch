@@ -36,7 +36,7 @@ describe('scoreCluster 综合评分', () => {
   it('越老分数越低（同一个问题，12 小时后分减半）', () => {
     const now = 1000
     const twelveHours = 12 * 3600 * 1000
-    const fresh = scoreCluster(10, 'high', now, now)          // 刚发生
+    const fresh = scoreCluster(10, 'high', now, now) // 刚发生
     const old = scoreCluster(10, 'high', now, now + twelveHours) // 12 小时后
     expect(old).toBeCloseTo(fresh / 2, 5)
   })
@@ -45,9 +45,36 @@ describe('scoreCluster 综合评分', () => {
 describe('rankIssues 排序取 TOP', () => {
   it('按 score 降序 + 只取前 N', () => {
     const issues: ReportIssue[] = [
-      { fingerprint: 'a', message: 'x', kind: 'x', severity: 'low', count: 1, score: 10, firstSeen: 1, lastSeen: 1 },
-      { fingerprint: 'b', message: 'y', kind: 'x', severity: 'low', count: 1, score: 99, firstSeen: 1, lastSeen: 1 },
-      { fingerprint: 'c', message: 'z', kind: 'x', severity: 'low', count: 1, score: 50, firstSeen: 1, lastSeen: 1 },
+      {
+        fingerprint: 'a',
+        message: 'x',
+        kind: 'x',
+        severity: 'low',
+        count: 1,
+        score: 10,
+        firstSeen: 1,
+        lastSeen: 1,
+      },
+      {
+        fingerprint: 'b',
+        message: 'y',
+        kind: 'x',
+        severity: 'low',
+        count: 1,
+        score: 99,
+        firstSeen: 1,
+        lastSeen: 1,
+      },
+      {
+        fingerprint: 'c',
+        message: 'z',
+        kind: 'x',
+        severity: 'low',
+        count: 1,
+        score: 50,
+        firstSeen: 1,
+        lastSeen: 1,
+      },
     ]
     const top = rankIssues(issues, 2)
     expect(top.map((i) => i.fingerprint)).toEqual(['b', 'c']) // 99 最高，取 2 个

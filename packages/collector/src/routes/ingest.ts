@@ -33,13 +33,13 @@ export function toRow(event: FailureEvent): InsertRow {
         stack: event.stack,
         filename: event.filename,
         lineno: event.lineno,
-        colno: event.colno
+        colno: event.colno,
       }
     case 'unhandled_rejection':
       return {
         ...base,
         reason: event.reason,
-        stack: event.stack
+        stack: event.stack,
       }
     case 'api_error':
       return {
@@ -48,24 +48,23 @@ export function toRow(event: FailureEvent): InsertRow {
         method: event.method,
         status: event.status,
         status_text: event.statusText,
-        response_body: event.responseBody
+        response_body: event.responseBody,
       }
     case 'resource_error':
       return {
         ...base,
         resource_url: event.resourceUrl,
-        resource_type: event.resourceType
+        resource_type: event.resourceType,
       }
   }
 }
-
 
 // Breadcrumb（行为轨迹单项）—— TODO ① 你写
 // TS 版（M1 写过）：{ type: 'navigation'|'click'|'xhr'|'console'; timestamp: number; message: string }
 // Zod 版对照：z.object({ ... })，type 用 z.enum，message 用 z.string()
 const breadcrumbSchema = z.object({
   // TODO 填
-  type: z.enum(['navigation', 'click', 'xhr', 'console']), 
+  type: z.enum(['navigation', 'click', 'xhr', 'console']),
   timestamp: z.number(),
   message: z.string(),
 })
@@ -109,7 +108,7 @@ const apiErrorSchema = z.object({
   ...baseFailureSchema.shape,
   kind: z.literal('api_error'),
   url: z.string(),
-  method: z.enum(['GET','POST','PUT','DELETE','PATCH']),
+  method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']),
   status: z.number(),
   statusText: z.string().optional(),
   responseBody: z.string().optional(),
@@ -119,7 +118,7 @@ const resourceErrorSchema = z.object({
   ...baseFailureSchema.shape,
   kind: z.literal('resource_error'),
   resourceUrl: z.string(),
-  resourceType: z.enum(['script','link','img','css','font','media'])
+  resourceType: z.enum(['script', 'link', 'img', 'css', 'font', 'media']),
 })
 
 const failureSchema = z.discriminatedUnion('kind', [
