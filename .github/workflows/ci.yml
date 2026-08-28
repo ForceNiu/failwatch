@@ -1,10 +1,11 @@
-# FailWatch CI：每次 push / PR 自动跑三道门禁
-# typecheck → 单测 → build（对应 Interview Forge 的 CI 经验）
+# FailWatch CI：每次 push / PR 自动跑四道门禁
+# typecheck → lint → 单测 → build
 name: CI
 
 on:
   push:
-    branches: [main, 'feat/**']
+    # 覆盖所有分支：只写 main + feat/** 会让 docs/**、fix/** 等分支的 push 静默跳过 CI
+    branches: ['**']
   pull_request:
 
 jobs:
