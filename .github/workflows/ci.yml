@@ -15,13 +15,15 @@ jobs:
       # GitHub Actions runner 默认 UTC；项目面向中国用户，时间格式化测试依赖 GMT+8
       TZ: Asia/Shanghai
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      # pnpm/action-setup v6 起会读取 package.json 的 packageManager 字段做版本对齐，
+      # version 输入作为该字段缺失时的兜底。
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
