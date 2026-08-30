@@ -17,11 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # pnpm/action-setup v6 起会读取 package.json 的 packageManager 字段做版本对齐，
-      # version 输入作为该字段缺失时的兜底。
+      # pnpm/action-setup v6 起会读取 package.json 的 packageManager 字段。
+      # 注意：不能再在 with 里写 version —— v6 会判定「两处都指定了 pnpm 版本」
+      # 并直接报 "Multiple versions of pnpm specified" 中断 job。
+      # 因此删掉 version 输入，以 packageManager 为唯一真相源，
+      # 保证本地开发与 CI 用的是同一个 pnpm 版本。
       - uses: pnpm/action-setup@v6
-        with:
-          version: 11
 
       - uses: actions/setup-node@v7
         with:
