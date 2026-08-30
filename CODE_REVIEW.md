@@ -68,7 +68,8 @@
 ## 3. 审查流程（Process）
 
 ### 3.1 分支与提交（沿用现有约定）
-- 功能 / 修复 → `feat/*` 或 `fix/*` 分支（已配 CI 对 `feat/**` 触发）。
+- 功能 / 修复 → `feat/*` 或 `fix/*` 分支。
+  CI 已配 `branches: ['**']`，**所有分支的 push 都会触发**（早期只写 `main` + `feat/**`，导致 `docs/**`、`fix/**` 等分支的 push 静默跳过 CI，是个已修的覆盖漏洞）。
 - 提交信息用 conventional commits（`feat:` / `fix:` / `refactor:` / `test:` / `docs:`）。
 - 合并用 `git merge --no-ff`，保留合并提交（已实践）。
 

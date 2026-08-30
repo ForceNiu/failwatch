@@ -90,7 +90,7 @@ pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（�
 
 打开 http://localhost:5175 点「加购 / 结算 / 详情」故意触发错误 → 看板 http://localhost:5173 通过 SSE 实时（无需刷新）出现新记录，标题旁状态灯显示「实时」。
 
-## 项目状态（2026-08-27）
+## 项目状态（2026-08-29）
 
 | 阶段 | 内容 | 状态 |
 |---|---|---|
@@ -113,7 +113,7 @@ pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（�
 
 ### 示例商城（demo-app）
 
-7 类前端错误被有意埋入业务操作：加购触发 4xx/5xx 接口错误、结算触发未捕获 Promise 拒绝、查看详情触发 JS 运行时错误、图片缺失触发资源加载失败。
+4 类前端错误（对应 SDK 里 `FailureEvent` 判别联合的 4 个分支）被有意埋入 7 个业务操作点：4 款商品加购分别触发 500 / 502 / 503 / 404 接口错误、结算触发未捕获 Promise 拒绝、查看详情触发 JS 运行时错误、历史款商品图缺失触发资源加载失败。
 
 ![示例商城](./docs/screenshots/01-demo-app.png)
 
