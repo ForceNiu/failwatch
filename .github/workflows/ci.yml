@@ -15,13 +15,16 @@ jobs:
       # GitHub Actions runner 默认 UTC；项目面向中国用户，时间格式化测试依赖 GMT+8
       TZ: Asia/Shanghai
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
+      # pnpm/action-setup v6 起会读取 package.json 的 packageManager 字段。
+      # 注意：不能再在 with 里写 version —— v6 会判定「两处都指定了 pnpm 版本」
+      # 并直接报 "Multiple versions of pnpm specified" 中断 job。
+      # 因此删掉 version 输入，以 packageManager 为唯一真相源，
+      # 保证本地开发与 CI 用的是同一个 pnpm 版本。
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
