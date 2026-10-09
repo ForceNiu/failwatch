@@ -25,11 +25,8 @@ function getSql(): ReturnType<typeof postgres> {
   return _sql
 }
 
-// ===== 数据库里"一行失败记录"的样子（TODO ① 你写）=====
-// 对照 failures 表列清单，把每一列翻译成字段。
-// 规则：非空列 → 字段: 类型；可空列 → 字段?: 类型；禁用 any。
+// 数据库里“一行失败记录”的样子
 export interface FailureRow {
-  // TODO 填
   id: string
   kind: string
   timestamp: number

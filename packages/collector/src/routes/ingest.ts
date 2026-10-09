@@ -59,17 +59,14 @@ export function toRow(event: FailureEvent): InsertRow {
   }
 }
 
-// Breadcrumb（行为轨迹单项）—— TODO ① 你写
-// TS 版（M1 写过）：{ type: 'navigation'|'click'|'xhr'|'console'; timestamp: number; message: string }
-// Zod 版对照：z.object({ ... })，type 用 z.enum，message 用 z.string()
+// Breadcrumb（行为轨迹单项）
 const breadcrumbSchema = z.object({
-  // TODO 填
   type: z.enum(['navigation', 'click', 'xhr', 'console']),
   timestamp: z.number(),
   message: z.string(),
 })
 
-// 公共基类（示范，对照 M1 的 BaseFailure）
+// 公共基类
 const baseFailureSchema = z.object({
   id: z.string(),
   timestamp: z.number(),
@@ -81,15 +78,11 @@ const baseFailureSchema = z.object({
   userId: z.string().optional(),
 })
 
-// ===== 四种失败各自的分支（TODO ② 你写，先写 jsErrorSchema）=====
-// TS 版：interface JsErrorEvent extends BaseFailure { kind: 'js_error'; message: string; stack?: string; ... }
-// Zod 版：z.object({ ...baseFailureSchema.shape, kind: z.literal('js_error'), message: z.string(), ... })
-// 注意：Zod 里"继承"不是 extends，是展开 ...baseFailureSchema.shape（shape = 它里面的字段们）
+// 四种失败各自的分支
 
 const jsErrorSchema = z.object({
   ...baseFailureSchema.shape,
   kind: z.literal('js_error'),
-  // TODO 填 message 和可选字段
   message: z.string(),
   stack: z.string().optional(),
   filename: z.string().optional(),

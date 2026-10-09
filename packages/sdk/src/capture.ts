@@ -5,7 +5,7 @@
 import type { JsErrorEvent, UnhandledRejectionEvent } from './types.js'
 import { send } from './transport.js'
 
-// 生成所有失败都带的公共字段（对照 M1 的 BaseFailure）
+// 生成所有失败都带的公共字段
 function base() {
   return {
     id: crypto.randomUUID(), // 每条事件的唯一 ID
@@ -17,13 +17,9 @@ function base() {
   }
 }
 
-// ===== 打包：把 Error 对象 → JsErrorEvent（TODO ① 你填）=====
-// 对照 M1 的 JsErrorEvent 形状：
-// { kind: 'js_error'; message: string; stack?: string; filename?: string; lineno?: number; colno?: number }
-// 记得用 ...base() 展开公共字段
+// 打包：把 Error 对象 → JsErrorEvent
 export function captureJsError(error: Error): JsErrorEvent {
   return {
-    // TODO 填：...base() + kind/message/stack 等
     ...base(), // 公共字段（id/timestamp/route/userAgent/severity/breadcrumbs）
     kind: 'js_error', // 判别联合的"种类标签"
     message: error.message, // 错误信息
