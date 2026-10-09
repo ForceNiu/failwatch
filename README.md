@@ -18,10 +18,10 @@ POST 上报
 Dashboard 看板（web）查询展示
    │
    ▼
-AI 每日/区间整合报告（DeepSeek 真实归因 + mock 降级）
+AI 每日/区间整合报告（**默认 mock 归因**；`LLM_MODE=deepseek` 时才真调 DeepSeek）
 ```
 
-核心设计：全链路共享**同一份 `FailureEvent` 类型定义**（`packages/sdk/src/types.ts`，判别联合 discriminated union），SDK / collector / web 三处直接 import，改一处编译期三处同步，杜绝"字段对不上"。
+核心设计：全链路共享**同一份 `FailureEvent` 类型定义**（`packages/sdk/src/types.ts`，判别联合 discriminated union）：**SDK 与 collector 直接 import**；web 看板侧另定义了 `RawFailure` / `FailureView`（对应库表行形状），由 `web/src/demo.ts` 引入 SDK。
 
 ## 目录结构（pnpm monorepo）
 
@@ -59,7 +59,7 @@ pnpm install      # 安装全部依赖
 pnpm dev          # 只启动 web 看板（Vite dev server，5173）
 pnpm dev:all      # 一键并发启动全部三个服务（推荐，见下）
 pnpm typecheck    # 全包 TypeScript 类型检查
-pnpm test         # 运行单测（vitest，collector 40 + web 15 共 55 断言）
+pnpm test         # 运行单测（vitest，collector 40 + web 15 = 55 个测试用例 / 12 个测试文件）
 pnpm lint         # ESLint 检查
 pnpm format       # Prettier 自动格式化（CI 用 format:check 卡门禁）
 ```
@@ -98,7 +98,7 @@ pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（�
 | M1 | SDK：`FailureEvent` 判别联合 + 全局捕获（onerror / unhandledrejection）+ 上报 | ✅ 完成 |
 | M2 | collector：Neon 建表存储 + Zod 校验 + /ingest + 查询路由 | ✅ 完成 |
 | M3 | Dashboard：失败列表 / 筛选栏 / 聚类视图 | ✅ 完成 |
-| — | 单测（collector 40 + web 15，共 55 断言） | ✅ 完成 |
+| — | 单测（collector 40 + web 15 = **55 个测试用例**，12 个测试文件；断言数 93） | ✅ 完成 |
 | — | CI（GitHub Actions：format / typecheck / lint / test / build 五道门禁） | ✅ 完成 |
 | M4 | SSE 实时推送（新失败自动上板，客户端主动重连 + 心跳看门狗 + 状态灯） | ✅ 完成 |
 | M5 | AI 每日整合报告（DeepSeek 归因 + 参照 Sentry 的评分模型） | ✅ 完成 |
@@ -109,7 +109,7 @@ pnpm --filter @failwatch/collector seed:watch       # 每 2 分钟发 1 条（�
 
 ## 界面预览
 
-> 以下截图来自真实运行的本地链路：示例商城触发错误 → SDK 上报 → collector 入库 → 看板 SSE 实时刷新。AI 报告由 DeepSeek 真实调用生成。
+> 以下截图来自真实运行的本地链路：示例商城触发错误 → SDK 上报 → collector 入库 → 看板 SSE 实时刷新。⚠️ **AI 报告默认走 mock**（`.env` 未设 `LLM_MODE`）；需 `pnpm --filter @failwatch/collector start:deepseek` 启动才是真实 DeepSeek 归因。
 
 ### 示例商城（demo-app）
 
@@ -131,7 +131,7 @@ SSE 连接状态灯显示「实时」，新失败无需刷新即可自动追加�
 
 ### 监控面板 · AI 报告
 
-默认 24 小时窗口，自动聚合 Top 问题并调用 DeepSeek 生成中文根因分析与修复建议。LLM 不可用时自动降级为历史样本或空白（监控系统不能因 AI 挂掉而失效）。
+默认 24 小时窗口，自动聚合 Top 问题；**默认走 mock 归因，切 `LLM_MODE=deepseek` 才调用 DeepSeek** 生成中文根因分析与修复建议。LLM 不可用时自动降级为历史样本或空白（监控系统不能因 AI 挂掉而失效）。
 
 ![监控面板-AI报告](./docs/screenshots/04-dashboard-ai-report.png)
 
@@ -155,7 +155,7 @@ SSE 连接状态灯显示「实时」，新失败无需刷新即可自动追加�
 
 AI 归因是**增强功能**，监控系统自身可用性优先级更高。做法是抽象出 `LLM` 接口，按 `LLM_MODE` 环境变量在 `deepseek` / `mock` 两个实现间切换：
 
-- DeepSeek（深度求索大模型）调用超时、返回 500、返回非 JSON —— 三种失败路径都有单测覆盖，任一失败都降级为历史样本或空白归因
+- DeepSeek（深度求索大模型）调用超时、返回 500、返回非 JSON —— 三种失败路径**都会**降级为历史样本或空白归因，报告照常生成
 - **报告照常生成**，只是没有 AI 归因部分，绝不会因为 AI 挂掉而整个监控系统失效
 
 ### 3. "最该先修哪个问题"的排序模型
@@ -173,4 +173,4 @@ score = 事件量 × 严重度权重 × 年龄衰减
 
 ## 为什么用 monorepo
 
-collector / web / demo-app 都要复用 SDK 里定义的 `FailureEvent` 数据结构。monorepo + pnpm workspace 让三处直接 import 同一份源码（软链接，非复制），实现**单一真相源**：复制会悄悄漂移、运行时才炸；共享 import 让错误在编译期就暴露。
+collector / web / demo-app 都要复用 SDK 里定义的 `FailureEvent` 数据结构。monorepo + pnpm workspace 让各包直接 import 同一份源码（软链接，非复制），实现**单一真相源**：复制会悄悄漂移、运行时才炸；共享 import 让错误在编译期就暴露。⚠️ 严格说：真正 import `FailureEvent` 的是 **collector**（校验与推断）与 **demo-app**（上报）；**web 看板只 import `init`**，展示用的是自己定义的 `RawFailure` / `FailureView`。

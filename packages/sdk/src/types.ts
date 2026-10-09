@@ -33,19 +33,14 @@ export interface JsErrorEvent extends BaseFailure {
   colno?: number
 }
 
-// ===== TODO 你写 ①：未捕获的 Promise 拒绝 =====
-// 提示：kind 固定写 'unhandled_rejection'
-//      独有字段：reason: string（拒绝原因）、stack?: string（可选调用栈）
+// 未捕获的 Promise 拒绝（unhandled_rejection）
 export interface UnhandledRejectionEvent extends BaseFailure {
   kind: 'unhandled_rejection'
   reason: string
   stack?: string
 }
 
-// ===== TODO 你写 ②：接口错误（后端返回 4xx/5xx）=====
-// 提示：kind 固定写 'api_error'
-//      独有字段：url: string、method: 'GET'|'POST'|'PUT'|'DELETE'|'PATCH'、
-//                status: number、statusText?: string、responseBody?: string
+// 接口错误（后端返回 4xx/5xx）
 export interface ApiErrorEvent extends BaseFailure {
   kind: 'api_error'
   url: string
@@ -61,28 +56,17 @@ export interface ApiErrorEvent extends BaseFailure {
   responseBody?: string
 }
 
-// ===== TODO 你写 ③：资源加载错误（js/css/图片等加载失败）=====
-// 提示：kind 固定写 'resource_error'
-//      独有字段：resourceUrl: string、resourceType: 'script'|'link'|'img'|'css'|'font'|'media'
+// 资源加载错误（js/css/图片等加载失败）
 export interface ResourceErrorEvent extends BaseFailure {
   kind: 'resource_error'
   resourceUrl: string
   resourceType: 'script' | 'link' | 'img' | 'css' | 'font' | 'media'
 }
 
-// ===== TODO 你写 ④：判别联合（把四种失败"或"起来）=====
-// 写法：type FailureEvent = JsErrorEvent | UnhandledRejectionEvent | ApiErrorEvent | ResourceErrorEvent;
+// 判别联合：四种失败事件
 export type FailureEvent =
   JsErrorEvent | UnhandledRejectionEvent | ApiErrorEvent | ResourceErrorEvent
 
-// ===== TODO 你写 ⑤：用 switch 描述每种失败（顺便验证类型收窄）=====
-// function describe(e: FailureEvent): string {
-//   switch (e.kind) {
-//     case 'js_error':
-//       return `JS 错误：${e.message}`;
-//     // 补上另外三个 case
-//   }
-// }
 export function describe(e: FailureEvent): string {
   switch (e.kind) {
     case 'js_error':

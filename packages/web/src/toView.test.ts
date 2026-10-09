@@ -22,12 +22,6 @@ function makeRaw(over: Partial<RawFailure>): RawFailure {
 }
 
 describe('toView 转换', () => {
-  // TODO 你写 3 个 it：
-  // 用例①: toView(makeRaw({ kind: 'api_error', url: '/api/login', method: 'POST', status: 500, message: null }))
-  //         → expect(result.message).toBe('POST /api/login (500)')
-  // 用例②: toView(makeRaw({}))  → expect(result.message).toBe('boom')
-  // 用例③: toView(makeRaw({ route: null })) → expect(result.route).toBe('')
-
   it('按 kind 筛选，只留匹配的', () => {
     const result = toView(
       makeRaw({
