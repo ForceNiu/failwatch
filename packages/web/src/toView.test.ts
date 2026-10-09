@@ -22,7 +22,6 @@ function makeRaw(over: Partial<RawFailure>): RawFailure {
 }
 
 describe('toView 转换', () => {
-
   it('按 kind 筛选，只留匹配的', () => {
     const result = toView(
       makeRaw({
