@@ -6,6 +6,7 @@
  * 前置：collector 正在跑（POST 走 /ingest 完整链路：校验→入库→广播→SSE 推送）
  */
 import type { FailureEvent } from '@failwatch/sdk'
+import { inferSeverity } from './ai/severity.js'
 
 const INGEST_URL = 'http://localhost:4000/ingest'
 const WATCH_INTERVAL_MS = 2 * 60 * 1000 // 2 分钟
@@ -105,33 +106,23 @@ const SAMPLES: any[] = [
   { kind: 'unhandled_rejection', reason: 'Promise rejected: aborted' },
 ]
 
-// 造一条完整事件（补 base 字段；severity 按规则给）
+// 造一条完整事件（补 base 字段；severity 交给 inferSeverity 判）
+// 注意：这里不再内联一份规则——它和 ingest 入库时调的是同一个函数，规则只有一处
 function makeEvent(
   sample: (typeof SAMPLES)[number],
   i: number,
   route: string,
 ): FailureEvent {
-  const severity =
-    sample.kind === 'api_error'
-      ? sample.status >= 500
-        ? 'critical'
-        : 'medium'
-      : sample.kind === 'js_error'
-        ? 'high'
-        : sample.kind === 'resource_error'
-          ? sample.resourceType === 'script'
-            ? 'high'
-            : 'low'
-          : 'medium'
-  return {
+  const event = {
     ...sample,
     id: `seed-${Date.now()}-${i}`,
     timestamp: Date.now(),
     route,
     userAgent: 'seed-demo/1.0',
-    severity,
     breadcrumbs: [],
+    severity: 'high', // 占位值，下面立刻用 inferSeverity 覆盖
   } as FailureEvent
+  return { ...event, severity: inferSeverity(event) } as FailureEvent
 }
 
 // 发一条到 /ingest（走完整链路）

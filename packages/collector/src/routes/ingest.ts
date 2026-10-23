@@ -6,6 +6,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { insert } from '../store.js'
 import { failureBus } from '../emitter.js'
+import { inferSeverity } from '../ai/severity.js'
 
 import type { FailureEvent } from '@failwatch/sdk'
 import type { InsertRow } from '../store.js'
@@ -19,7 +20,8 @@ export function toRow(event: FailureEvent): InsertRow {
     timestamp: event.timestamp,
     route: event.route,
     user_agent: event.userAgent,
-    severity: event.severity,
+    // 服务端统一判严重度：客户端上报的值不可信（SDK 侧写死 high）
+    severity: inferSeverity(event),
     breadcrumbs: JSON.stringify(event.breadcrumbs),
     release: event.release,
     user_id: event.userId,
